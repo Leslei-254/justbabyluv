@@ -17,6 +17,14 @@ export async function POST(req: Request) {
   const user = await getAuthedUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const existingBabies = await getUserBabies(user.id);
+  if (existingBabies.length > 0) {
+    return NextResponse.json(
+      { error: "A baby profile already exists for this account." },
+      { status: 409 }
+    );
+  }
+
   const body = await req.json().catch(() => null);
   const parsed = babySchema.safeParse(body);
   if (!parsed.success) {

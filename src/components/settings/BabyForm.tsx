@@ -49,26 +49,31 @@ export function BabyForm({
     const url = initial?.id ? `/api/babies/${initial.id}` : "/api/babies";
     const method = initial?.id ? "PATCH" : "POST";
 
-    const res = await fetch(url, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    const data = await res.json();
-    setLoading(false);
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
 
-    if (!res.ok) {
-      setError(data.error || "Something went wrong. Please try again.");
-      return;
-    }
+      if (!res.ok) {
+        setError(data.error || "Something went wrong. Please try again.");
+        return;
+      }
 
-    toast.success(initial?.id ? "Baby profile updated" : "Baby profile created");
-    if (onSaved) {
-      onSaved();
-    } else {
-      router.push(redirectTo);
+      toast.success(initial?.id ? "Baby profile updated" : "Baby profile created");
+      if (onSaved) {
+        onSaved();
+      } else {
+        router.push(redirectTo);
+      }
+      router.refresh();
+    } catch {
+      setError("Couldn't reach the server. Check your connection and try again.");
+    } finally {
+      setLoading(false);
     }
-    router.refresh();
   }
 
   return (
@@ -79,7 +84,14 @@ export function BabyForm({
       </div>
       <div>
         <Field htmlFor="dob">Date of birth</Field>
-        <Input id="dob" name="dob" type="date" required defaultValue={initial?.dob} />
+        <Input
+          id="dob"
+          name="dob"
+          type="date"
+          required
+          max={new Date().toISOString().slice(0, 10)}
+          defaultValue={initial?.dob}
+        />
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>

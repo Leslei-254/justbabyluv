@@ -21,29 +21,33 @@ export function SignupForm() {
     const email = String(form.get("email") || "");
     const password = String(form.get("password") || "");
 
-    const res = await fetch("/api/signup", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password }),
-    });
-    const data = await res.json();
+    try {
+      const res = await fetch("/api/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password }),
+      });
+      const data = await res.json();
 
-    if (!res.ok) {
+      if (!res.ok) {
+        setError(data.error || "Something went wrong. Please try again.");
+        return;
+      }
+
+      const result = await signIn("credentials", { email, password, redirect: false });
+      if (result?.error) {
+        setError("Account created, but sign-in failed. Please sign in.");
+        router.push("/login");
+        return;
+      }
+      toast.success("Account created!");
+      router.push("/onboarding");
+      router.refresh();
+    } catch {
+      setError("Couldn't reach the server. Check your connection and try again.");
+    } finally {
       setLoading(false);
-      setError(data.error || "Something went wrong. Please try again.");
-      return;
     }
-
-    const result = await signIn("credentials", { email, password, redirect: false });
-    setLoading(false);
-    if (result?.error) {
-      setError("Account created, but sign-in failed. Please sign in.");
-      router.push("/login");
-      return;
-    }
-    toast.success("Account created!");
-    router.push("/onboarding");
-    router.refresh();
   }
 
   return (

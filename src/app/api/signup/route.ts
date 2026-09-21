@@ -36,10 +36,36 @@ export async function POST(req: Request) {
   }
 
   const passwordHash = await hashPassword(password);
-  const [user] = await db
-    .insert(users)
-    .values({ name, email: normalizedEmail, passwordHash })
-    .returning({ id: users.id, name: users.name, email: users.email });
 
-  return NextResponse.json({ user }, { status: 201 });
+  try {
+    const [user] = await db
+      .insert(users)
+      .values({ name, email: normalizedEmail, passwordHash })
+      .returning({ id: users.id, name: users.name, email: users.email });
+
+    return NextResponse.json({ user }, { status: 201 });
+  } catch (err) {
+    // The pre-check above handles the common case, but the database's unique
+    // constraint on users.email is the final authority (e.g. two concurrent
+    // signups for the same email racing past the pre-check). Drizzle wraps
+    // the underlying libsql error in a DrizzleQueryError, so the SQLite error
+    // code lives on `err.cause`, not on `err` itself — check both defensively.
+    const sqliteCode =
+      (err as { code?: string })?.code ??
+      (err as { cause?: { code?: string } })?.cause?.code;
+    const isDuplicateEmail = sqliteCode === "SQLITE_CONSTRAINT";
+
+    if (isDuplicateEmail) {
+      return NextResponse.json(
+        { error: "An account with this email already exists" },
+        { status: 409 }
+      );
+    }
+
+    console.error("[signup] Unexpected error creating user:", err);
+    return NextResponse.json(
+      { error: "Something went wrong. Please try again." },
+      { status: 500 }
+    );
+  }
 }

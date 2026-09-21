@@ -20,20 +20,25 @@ export function LoginForm() {
     const email = String(form.get("email") || "");
     const password = String(form.get("password") || "");
 
-    const result = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
+    try {
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
 
-    setLoading(false);
-    if (result?.error) {
-      setError("Incorrect email or password.");
-      return;
+      if (result?.error) {
+        setError("Incorrect email or password.");
+        return;
+      }
+      toast.success("Welcome back!");
+      router.push("/dashboard");
+      router.refresh();
+    } catch {
+      setError("Couldn't reach the server. Check your connection and try again.");
+    } finally {
+      setLoading(false);
     }
-    toast.success("Welcome back!");
-    router.push("/dashboard");
-    router.refresh();
   }
 
   return (
