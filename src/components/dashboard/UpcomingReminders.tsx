@@ -12,7 +12,7 @@ export function UpcomingReminders({ reminders }: { reminders: Reminder[] }) {
     <Card>
       <div className="flex items-center justify-between mb-1">
         <h2 className="font-display text-lg text-ink">Upcoming reminders</h2>
-        <Link href="/reminders" className="text-sm text-teal-strong font-medium">
+        <Link href="/reminders" className="text-sm text-rose-strong font-medium">
           View all
         </Link>
       </div>

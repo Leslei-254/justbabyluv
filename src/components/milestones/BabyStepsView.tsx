@@ -56,25 +56,25 @@ export function BabyStepsView({
         <ol className="relative border-l border-border pl-6 space-y-6">
           {milestones.map((m) => (
             <li key={m.id} className="relative">
-              <span className="absolute -left-[27px] top-1 w-3 h-3 rounded-full bg-clay ring-4 ring-cream" />
+              <span className="absolute -left-[27px] top-1 w-3 h-3 rounded-full bg-sand ring-4 ring-cream" />
               <div className="flex items-start justify-between gap-3">
-                <div>
+                <div className="min-w-0 flex-1">
                   <p className="font-display text-lg text-ink">{m.title}</p>
                   <p className="text-xs text-ink-faint">{formatDayLabel(m.date)}</p>
-                  {m.note && <p className="text-sm text-ink-soft mt-1">{m.note}</p>}
+                  {m.note && <p className="text-sm text-ink-soft mt-1 break-words">{m.note}</p>}
                   {m.photoUrl && (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={m.photoUrl}
                       alt={m.title}
-                      className="mt-2 rounded-xl max-h-40 object-cover"
+                      className="mt-2 rounded-xl max-h-40 w-full max-w-xs object-cover"
                     />
                   )}
                 </div>
                 <button
                   aria-label="Delete"
                   onClick={() => onDelete(m.id)}
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-danger hover:bg-danger-soft shrink-0"
+                  className="w-10 h-10 rounded-full flex items-center justify-center text-danger hover:bg-danger-soft shrink-0"
                 >
                   <Trash2 size={14} />
                 </button>

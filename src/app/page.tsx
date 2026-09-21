@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { Baby, Droplets, Moon, Pill } from "lucide-react";
 import { auth } from "@/auth";
 import { Button } from "@/components/ui/Button";
+import { Logo } from "@/components/brand/Logo";
 
 export default async function LandingPage() {
   const session = await auth();
@@ -11,16 +12,22 @@ export default async function LandingPage() {
   return (
     <div className="flex-1 flex flex-col">
       <header className="px-6 py-5 flex items-center justify-between max-w-5xl mx-auto w-full">
-        <span className="font-display text-lg text-ink">JustBaby Luv</span>
-        <Link href="/login" className="text-sm font-medium text-ink-soft hover:text-ink">
+        <Logo size="md" />
+        <Link
+          href="/login"
+          className="text-sm font-medium text-ink-soft hover:text-ink px-2 py-1.5 rounded-lg"
+        >
           Sign in
         </Link>
       </header>
 
       <section className="flex-1 flex items-center">
-        <div className="max-w-5xl mx-auto w-full px-6 py-12 grid sm:grid-cols-2 gap-10 items-center">
+        <div className="max-w-5xl mx-auto w-full px-6 py-12 grid sm:grid-cols-2 gap-10 sm:gap-14 items-center">
           <div>
-            <h1 className="font-display text-4xl sm:text-5xl leading-[1.1] text-ink">
+            <p className="text-sm font-medium text-rose-strong mb-3">
+              A calmer way to track baby care
+            </p>
+            <h1 className="font-display text-4xl sm:text-5xl leading-[1.12] text-ink">
               Less to remember. More time with your baby.
             </h1>
             <p className="mt-5 text-ink-soft text-lg max-w-md">
@@ -70,7 +77,7 @@ export default async function LandingPage() {
 function FeatureTile({ icon, label }: { icon: React.ReactNode; label: string }) {
   return (
     <div className="bg-surface border border-border rounded-2xl p-5 flex flex-col gap-3">
-      <div className="w-10 h-10 rounded-xl bg-teal-soft text-teal-strong flex items-center justify-center">
+      <div className="w-10 h-10 rounded-xl bg-rose-soft text-rose-strong flex items-center justify-center">
         {icon}
       </div>
       <p className="text-sm text-ink font-medium">{label}</p>

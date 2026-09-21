@@ -13,7 +13,7 @@ export default async function DashboardPage() {
 
   const todayStart = startOfDay(new Date());
 
-  const [activeTimers, todaysActivities, recentActivities, upcomingReminders, todaysMilestones] =
+  const [activeTimers, todaysActivities, recentActivities, upcomingReminders, todaysMilestones, recentMilestones] =
     await Promise.all([
       db.query.activities.findMany({
         where: and(eq(activities.babyId, baby.id), isNull(activities.endTime)),
@@ -38,6 +38,11 @@ export default async function DashboardPage() {
       db.query.milestones.findMany({
         where: and(eq(milestones.babyId, baby.id), gte(milestones.date, todayStart)),
       }),
+      db.query.milestones.findMany({
+        where: eq(milestones.babyId, baby.id),
+        orderBy: (m, { desc }) => [desc(m.date)],
+        limit: 3,
+      }),
     ]);
 
   const todayStats = {
@@ -57,6 +62,7 @@ export default async function DashboardPage() {
       activeTimers={activeTimers}
       recentActivities={recentActivities}
       upcomingReminders={upcomingReminders}
+      recentMilestones={recentMilestones}
       todayStats={todayStats}
     />
   );

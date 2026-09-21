@@ -51,7 +51,7 @@ export function Sheet({
           className
         )}
       >
-        <div className="sticky top-0 bg-surface flex items-center justify-between px-5 pt-5 pb-3 border-b border-border">
+        <div className="sticky top-0 bg-surface flex items-center justify-between px-5 pt-5 pb-3 border-b border-border rounded-t-3xl sm:rounded-t-3xl">
           <h2 id="sheet-title" className="font-display text-lg text-ink">
             {title}
           </h2>
@@ -59,12 +59,17 @@ export function Sheet({
             ref={closeRef}
             onClick={onClose}
             aria-label="Close"
-            className="w-8 h-8 rounded-full flex items-center justify-center text-ink-soft hover:bg-cream"
+            className="w-10 h-10 -mr-1.5 rounded-full flex items-center justify-center text-ink-soft hover:bg-cream"
           >
             <X size={18} />
           </button>
         </div>
-        <div className="p-5">{children}</div>
+        <div
+          className="p-5"
+          style={{ paddingBottom: "max(1.25rem, env(safe-area-inset-bottom, 0px))" }}
+        >
+          {children}
+        </div>
       </div>
     </div>
   );

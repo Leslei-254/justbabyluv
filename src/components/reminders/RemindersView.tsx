@@ -114,8 +114,11 @@ export function RemindersView({
         <Card>
           <ul className="divide-y divide-border">
             {pending.map((r) => (
-              <li key={r.id} className="py-3 flex items-start justify-between gap-3">
-                <div className="min-w-0">
+              <li
+                key={r.id}
+                className="py-3 flex flex-wrap items-start justify-between gap-x-3 gap-y-2"
+              >
+                <div className="min-w-0 flex-1 basis-40">
                   <p className="text-sm font-medium text-ink truncate">{r.title}</p>
                   <p className="text-xs text-ink-soft">
                     {formatDayLabel(r.datetime)} · {formatClockTime(r.datetime)}
@@ -123,12 +126,12 @@ export function RemindersView({
                     {r.emailEnabled ? " · email on" : ""}
                   </p>
                 </div>
-                <div className="flex items-center gap-1 shrink-0">
+                <div className="flex flex-wrap items-center justify-end gap-1 shrink-0">
                   {r.emailEnabled && (
                     <button
                       aria-label="Send test email"
                       onClick={() => sendTest(r)}
-                      className="w-8 h-8 rounded-full flex items-center justify-center text-ink-soft hover:bg-cream"
+                      className="w-10 h-10 rounded-full flex items-center justify-center text-ink-soft hover:bg-cream"
                       title="Send test email"
                     >
                       <Mail size={14} />
@@ -137,7 +140,7 @@ export function RemindersView({
                   <button
                     aria-label="Snooze 15 minutes"
                     onClick={() => snooze(r)}
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-ink-soft hover:bg-cream"
+                    className="w-10 h-10 rounded-full flex items-center justify-center text-ink-soft hover:bg-cream"
                     title="Snooze 15 minutes"
                   >
                     <Clock size={14} />
@@ -148,21 +151,21 @@ export function RemindersView({
                       setEditing(r);
                       setOpen(true);
                     }}
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-ink-soft hover:bg-cream"
+                    className="w-10 h-10 rounded-full flex items-center justify-center text-ink-soft hover:bg-cream"
                   >
                     <Pencil size={14} />
                   </button>
                   <button
                     aria-label="Mark complete"
                     onClick={() => complete(r)}
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-success hover:bg-success-soft"
+                    className="w-10 h-10 rounded-full flex items-center justify-center text-success hover:bg-success-soft"
                   >
                     <Check size={14} />
                   </button>
                   <button
                     aria-label="Delete"
                     onClick={() => remove(r)}
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-danger hover:bg-danger-soft"
+                    className="w-10 h-10 rounded-full flex items-center justify-center text-danger hover:bg-danger-soft"
                   >
                     <Trash2 size={14} />
                   </button>
@@ -179,13 +182,13 @@ export function RemindersView({
           <ul className="divide-y divide-border">
             {completed.map((r) => (
               <li key={r.id} className="py-3 flex items-center justify-between gap-3">
-                <p className={cn("text-sm text-ink-soft line-through truncate")}>
+                <p className={cn("text-sm text-ink-soft line-through truncate min-w-0 flex-1")}>
                   {r.title}
                 </p>
                 <button
                   aria-label="Delete"
                   onClick={() => remove(r)}
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-danger hover:bg-danger-soft shrink-0"
+                  className="w-10 h-10 rounded-full flex items-center justify-center text-danger hover:bg-danger-soft shrink-0"
                 >
                   <Trash2 size={14} />
                 </button>

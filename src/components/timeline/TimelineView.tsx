@@ -72,9 +72,9 @@ export function TimelineView({
             aria-selected={filter === f.value}
             onClick={() => setFilter(f.value)}
             className={cn(
-              "shrink-0 rounded-full px-4 py-2 text-sm font-medium border transition-colors",
+              "shrink-0 whitespace-nowrap rounded-full px-4 py-2.5 text-sm font-medium border transition-colors",
               filter === f.value
-                ? "bg-teal text-white border-teal"
+                ? "bg-rose text-white border-rose"
                 : "bg-surface text-ink-soft border-border hover:bg-cream"
             )}
           >
@@ -87,8 +87,12 @@ export function TimelineView({
         <Card>
           <EmptyState
             icon={<CalendarClock size={22} />}
-            title="No activities yet"
-            description="Logged activities and Baby Steps will show up here."
+            title={filter === "ALL" ? "No activities yet" : "Nothing logged here yet"}
+            description={
+              filter === "ALL"
+                ? "Logged activities and Baby Steps will show up here."
+                : `No ${filters.find((f) => f.value === filter)?.label.toLowerCase()} logged in the last 30 days.`
+            }
           />
         </Card>
       ) : (
@@ -116,7 +120,7 @@ export function TimelineView({
 function MilestoneRow({ milestone }: { milestone: Milestone }) {
   return (
     <div className="flex items-center gap-3 py-3 border-b border-border last:border-0">
-      <div className="w-9 h-9 rounded-full bg-clay-soft flex items-center justify-center text-clay shrink-0">
+      <div className="w-9 h-9 rounded-full bg-sand-soft flex items-center justify-center text-sand shrink-0">
         <Sparkles size={16} />
       </div>
       <div className="min-w-0 flex-1">

@@ -46,9 +46,9 @@ export function ActiveTimerCard({
   }
 
   return (
-    <Card className="bg-teal-soft border-teal/30 flex items-center justify-between gap-3">
+    <Card className="bg-rose-soft border-rose/30 flex items-center justify-between gap-3">
       <div className="flex items-center gap-3 min-w-0">
-        <div className="w-11 h-11 rounded-xl bg-surface flex items-center justify-center text-teal-strong shrink-0">
+        <div className="w-11 h-11 rounded-xl bg-surface flex items-center justify-center text-rose-strong shrink-0">
           <Icon size={20} />
         </div>
         <div className="min-w-0">

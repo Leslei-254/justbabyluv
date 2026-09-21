@@ -11,27 +11,31 @@ import { LogActivitySheet } from "./LogActivitySheet";
 import { ActiveTimerCard } from "./ActiveTimerCard";
 import { TodaySummary } from "./TodaySummary";
 import { UpcomingReminders } from "./UpcomingReminders";
+import { RecentMilestones } from "./RecentMilestones";
 import { MilestoneSheet } from "@/components/milestones/MilestoneSheet";
 import { ActivityRow } from "@/components/timeline/ActivityRow";
 import { Card, EmptyState } from "@/components/ui/primitives";
-import type { activities, babies, reminders } from "@/db/schema";
+import type { activities, babies, reminders, milestones } from "@/db/schema";
 import type { InferSelectModel } from "drizzle-orm";
 
 type Activity = InferSelectModel<typeof activities>;
 type Baby = InferSelectModel<typeof babies>;
 type Reminder = InferSelectModel<typeof reminders>;
+type Milestone = InferSelectModel<typeof milestones>;
 
 export function DashboardView({
   baby,
   activeTimers,
   recentActivities,
   upcomingReminders,
+  recentMilestones,
   todayStats,
 }: {
   baby: Baby;
   activeTimers: Activity[];
   recentActivities: Activity[];
   upcomingReminders: Reminder[];
+  recentMilestones: Milestone[];
   todayStats: {
     feeds: number;
     diapers: number;
@@ -116,7 +120,7 @@ export function DashboardView({
       <Card>
         <div className="flex items-center justify-between mb-1">
           <h2 className="font-display text-lg text-ink">Recent activity</h2>
-          <Link href="/timeline" className="text-sm text-teal-strong font-medium">
+          <Link href="/timeline" className="text-sm text-rose-strong font-medium">
             View timeline
           </Link>
         </div>
@@ -134,6 +138,8 @@ export function DashboardView({
           </div>
         )}
       </Card>
+
+      <RecentMilestones milestones={recentMilestones} />
 
       {sheetType && (
         <LogActivitySheet

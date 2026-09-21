@@ -21,19 +21,30 @@ export function QuickActions({
 }) {
   return (
     <div className="grid grid-cols-3 gap-3" role="group" aria-label="Quick actions">
-      {actions.map(({ kind, label, icon: Icon }) => (
-        <button
-          key={kind}
-          onClick={() => onAction(kind)}
-          className={cn(
-            "flex flex-col items-center justify-center gap-2 rounded-2xl border border-border bg-surface py-5 text-sm font-medium text-ink transition-colors hover:bg-teal-soft active:bg-teal-soft min-h-[92px]",
-            kind === "SLEEP" && sleepActive && "bg-teal-soft border-teal"
-          )}
-        >
-          <Icon size={24} className="text-teal-strong" />
-          {kind === "SLEEP" && sleepActive ? "Stop Sleep" : label}
-        </button>
-      ))}
+      {actions.map(({ kind, label, icon: Icon }) => {
+        const isActiveSleep = kind === "SLEEP" && sleepActive;
+        return (
+          <button
+            key={kind}
+            onClick={() => onAction(kind)}
+            aria-pressed={kind === "SLEEP" ? Boolean(sleepActive) : undefined}
+            className={cn(
+              "flex flex-col items-center justify-center gap-2 rounded-2xl border border-border bg-surface py-5 text-sm font-medium text-ink transition-colors hover:bg-rose-soft hover:border-rose/40 active:bg-rose-soft min-h-[92px]",
+              isActiveSleep && "bg-rose-soft border-rose"
+            )}
+          >
+            <span
+              className={cn(
+                "w-9 h-9 rounded-full flex items-center justify-center",
+                isActiveSleep ? "bg-rose text-white" : "bg-rose-soft text-rose-strong"
+              )}
+            >
+              <Icon size={18} />
+            </span>
+            {isActiveSleep ? "Stop Sleep" : label}
+          </button>
+        );
+      })}
     </div>
   );
 }

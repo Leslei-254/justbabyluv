@@ -103,7 +103,7 @@ export function LogActivitySheet({
               ].map((opt) => (
                 <label
                   key={opt.value}
-                  className="flex items-center justify-center rounded-xl border border-border bg-cream py-3 text-sm font-medium cursor-pointer has-[:checked]:bg-teal-soft has-[:checked]:border-teal"
+                  className="flex items-center justify-center rounded-xl border border-border bg-cream py-3 text-sm font-medium cursor-pointer has-[:checked]:bg-rose-soft has-[:checked]:border-rose"
                 >
                   <input
                     type="radio"

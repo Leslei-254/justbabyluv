@@ -17,20 +17,22 @@ export function BabyHeader({
 
   return (
     <div className="flex items-center gap-4">
-      <div className="w-16 h-16 rounded-2xl bg-teal-soft flex items-center justify-center overflow-hidden shrink-0">
+      <div className="w-16 h-16 rounded-2xl bg-rose-soft flex items-center justify-center overflow-hidden shrink-0">
         {photoUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={photoUrl} alt={name} className="w-full h-full object-cover" />
         ) : (
-          <span className="font-display text-2xl text-teal-strong">
+          <span className="font-display text-2xl text-rose-strong">
             {name.charAt(0).toUpperCase()}
           </span>
         )}
       </div>
       <div className="min-w-0">
         <p className="text-xs text-ink-faint">{today}</p>
-        <h1 className="font-display text-2xl text-ink truncate">{name}</h1>
-        <p className="text-sm text-ink-soft">{formatBabyAge(dob)}</p>
+        <h1 className="font-display text-2xl text-ink truncate mt-0.5">{name}</h1>
+        <span className="inline-flex items-center mt-1.5 text-xs font-medium text-rose-strong bg-rose-soft px-2.5 py-1 rounded-full">
+          {formatBabyAge(dob)}
+        </span>
       </div>
     </div>
   );

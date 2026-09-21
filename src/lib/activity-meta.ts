@@ -5,11 +5,11 @@ export const activityMeta: Record<
   ActivityType,
   { label: string; icon: typeof Milk; emoji: string; colorVar: string }
 > = {
-  FEED: { label: "Feed", icon: Milk, emoji: "🍼", colorVar: "teal" },
-  DIAPER: { label: "Diaper", icon: Droplet, emoji: "🧷", colorVar: "clay" },
-  SLEEP: { label: "Sleep", icon: Moon, emoji: "😴", colorVar: "teal" },
-  PUMP: { label: "Pump", icon: Pipette, emoji: "🤱", colorVar: "clay" },
-  MEDICATION: { label: "Medicine", icon: Pill, emoji: "💊", colorVar: "teal" },
+  FEED: { label: "Feed", icon: Milk, emoji: "🍼", colorVar: "rose" },
+  DIAPER: { label: "Diaper", icon: Droplet, emoji: "🧷", colorVar: "sand" },
+  SLEEP: { label: "Sleep", icon: Moon, emoji: "😴", colorVar: "rose" },
+  PUMP: { label: "Pump", icon: Pipette, emoji: "🤱", colorVar: "sand" },
+  MEDICATION: { label: "Medicine", icon: Pill, emoji: "💊", colorVar: "rose" },
 };
 
 export const milestoneIcon = Sparkles;

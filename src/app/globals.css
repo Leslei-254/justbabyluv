@@ -1,59 +1,67 @@
 @import "tailwindcss";
 
+/*
+ * Design tokens for JustBaby Luv.
+ * Warm, calm, premium family-care palette: warm neutral backgrounds with a
+ * restrained dusty-rose accent (primary) and a soft warm gold accent
+ * (secondary). Values are grouped by theme below; components reference the
+ * token names only (bg-rose, text-ink-soft, etc.) — never raw hex values.
+ */
+
 :root {
-  --color-cream: #fbf7f1;
+  --color-cream: #fbf6f2;
   --color-surface: #ffffff;
   --color-surface-raised: #ffffff;
-  --color-ink: #2a2622;
-  --color-ink-soft: #6b6259;
-  --color-ink-faint: #948b7f;
-  --color-teal: #3e6664;
-  --color-teal-strong: #2c4c4a;
-  --color-teal-soft: #dceae8;
-  --color-clay: #dd8f5c;
-  --color-clay-soft: #fbe8d8;
-  --color-border: #eae3d8;
-  --color-danger: #b3543f;
-  --color-danger-soft: #f7e2dc;
-  --color-success: #4a7a5d;
-  --color-success-soft: #e1efe4;
+  --color-ink: #2b2422;
+  --color-ink-soft: #6e6058;
+  --color-ink-faint: #a0938a;
+  --color-rose: #b15d68;
+  --color-rose-strong: #8b454f;
+  --color-rose-soft: #f6e4e3;
+  --color-sand: #c68a4e;
+  --color-sand-soft: #f7e8d6;
+  --color-border: #eee3dc;
+  --color-danger: #c1442e;
+  --color-danger-soft: #f8e1dc;
+  --color-success: #4f7a5b;
+  --color-success-soft: #e3eee5;
 }
 
 :root[data-theme="dark"] {
-  --color-cream: #1c1a18;
-  --color-surface: #242220;
-  --color-surface-raised: #2b2825;
-  --color-ink: #f3efe9;
-  --color-ink-soft: #b8b0a6;
-  --color-ink-faint: #8b8278;
-  --color-teal: #7fb5b1;
-  --color-teal-strong: #a3cbc8;
-  --color-teal-soft: #24403e;
-  --color-clay: #e8a374;
-  --color-clay-soft: #3a2c22;
-  --color-border: #38342f;
-  --color-danger: #e2947f;
-  --color-danger-soft: #3d2620;
+  --color-cream: #201a18;
+  --color-surface: #2a2220;
+  --color-surface-raised: #322824;
+  --color-ink: #f5eae6;
+  --color-ink-soft: #c4b3ac;
+  --color-ink-faint: #94827a;
+  --color-rose: #e28d93;
+  --color-rose-strong: #f0afb3;
+  --color-rose-soft: #3d2529;
+  --color-sand: #e0aa6c;
+  --color-sand-soft: #3b2c1e;
+  --color-border: #3b302b;
+  --color-danger: #e2907a;
+  --color-danger-soft: #3d251e;
   --color-success: #8fc0a1;
   --color-success-soft: #223428;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --color-cream: #1c1a18;
-    --color-surface: #242220;
-    --color-surface-raised: #2b2825;
-    --color-ink: #f3efe9;
-    --color-ink-soft: #b8b0a6;
-    --color-ink-faint: #8b8278;
-    --color-teal: #7fb5b1;
-    --color-teal-strong: #a3cbc8;
-    --color-teal-soft: #24403e;
-    --color-clay: #e8a374;
-    --color-clay-soft: #3a2c22;
-    --color-border: #38342f;
-    --color-danger: #e2947f;
-    --color-danger-soft: #3d2620;
+    --color-cream: #201a18;
+    --color-surface: #2a2220;
+    --color-surface-raised: #322824;
+    --color-ink: #f5eae6;
+    --color-ink-soft: #c4b3ac;
+    --color-ink-faint: #94827a;
+    --color-rose: #e28d93;
+    --color-rose-strong: #f0afb3;
+    --color-rose-soft: #3d2529;
+    --color-sand: #e0aa6c;
+    --color-sand-soft: #3b2c1e;
+    --color-border: #3b302b;
+    --color-danger: #e2907a;
+    --color-danger-soft: #3d251e;
     --color-success: #8fc0a1;
     --color-success-soft: #223428;
   }
@@ -65,11 +73,11 @@
   --color-ink: var(--color-ink);
   --color-ink-soft: var(--color-ink-soft);
   --color-ink-faint: var(--color-ink-faint);
-  --color-teal: var(--color-teal);
-  --color-teal-strong: var(--color-teal-strong);
-  --color-teal-soft: var(--color-teal-soft);
-  --color-clay: var(--color-clay);
-  --color-clay-soft: var(--color-clay-soft);
+  --color-rose: var(--color-rose);
+  --color-rose-strong: var(--color-rose-strong);
+  --color-rose-soft: var(--color-rose-soft);
+  --color-sand: var(--color-sand);
+  --color-sand-soft: var(--color-sand-soft);
   --color-border: var(--color-border);
   --color-danger: var(--color-danger);
   --color-danger-soft: var(--color-danger-soft);
@@ -82,7 +90,7 @@
 body {
   background: var(--color-cream);
   color: var(--color-ink);
-  font-family: var(--font-sans), system-ui, sans-serif;
+  font-family: var(--font-sans);
 }
 
 * {
@@ -90,7 +98,7 @@ body {
 }
 
 :focus-visible {
-  outline: 2px solid var(--color-teal);
+  outline: 2px solid var(--color-rose);
   outline-offset: 2px;
 }
 

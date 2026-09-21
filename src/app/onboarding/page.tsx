@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/session";
 import { getUserBabies } from "@/lib/data";
 import { BabyForm } from "@/components/settings/BabyForm";
+import { LogoMark } from "@/components/brand/LogoMark";
 
 export default async function OnboardingPage() {
   const user = await requireUser();
@@ -11,7 +12,8 @@ export default async function OnboardingPage() {
   return (
     <div className="min-h-screen flex items-center justify-center px-6 py-12">
       <div className="w-full max-w-sm">
-        <p className="text-sm font-medium text-teal-strong">Almost there</p>
+        <LogoMark size={32} className="mb-6" />
+        <p className="text-sm font-medium text-rose-strong">Almost there</p>
         <h1 className="font-display text-2xl text-ink mt-1 mb-1">
           Tell us about your baby
         </h1>

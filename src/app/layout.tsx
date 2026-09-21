@@ -6,12 +6,16 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "JustBaby Luv Baby Care",
   description: "Keep track of the little things that matter.",
+  icons: {
+    icon: "/brand/mark.svg",
+    apple: "/brand/mark.svg",
+  },
 };
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#FBF7F1" },
-    { media: "(prefers-color-scheme: dark)", color: "#1C1A18" },
+    { media: "(prefers-color-scheme: light)", color: "#FBF6F2" },
+    { media: "(prefers-color-scheme: dark)", color: "#201A18" },
   ],
 };
 

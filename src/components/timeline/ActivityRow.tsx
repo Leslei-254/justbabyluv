@@ -43,7 +43,7 @@ export function ActivityRow({
 
   return (
     <div className="flex items-center gap-3 py-3 border-b border-border last:border-0 group">
-      <div className="w-9 h-9 rounded-full bg-teal-soft flex items-center justify-center text-teal-strong shrink-0">
+      <div className="w-9 h-9 rounded-full bg-rose-soft flex items-center justify-center text-rose-strong shrink-0">
         <Icon size={16} />
       </div>
       <div className="min-w-0 flex-1">
@@ -56,12 +56,12 @@ export function ActivityRow({
           {activity.notes ? ` · ${activity.notes}` : ""}
         </p>
       </div>
-      <div className="hidden group-hover:flex sm:opacity-0 sm:group-hover:opacity-100 items-center gap-1 shrink-0">
+      <div className="flex sm:opacity-0 sm:group-hover:opacity-100 sm:focus-within:opacity-100 items-center gap-1 shrink-0">
         {onEdit && (
           <button
             aria-label="Edit"
             onClick={() => onEdit(activity)}
-            className="w-8 h-8 rounded-full flex items-center justify-center text-ink-soft hover:bg-cream"
+            className="w-10 h-10 rounded-full flex items-center justify-center text-ink-soft hover:bg-cream"
           >
             <Pencil size={14} />
           </button>
@@ -70,7 +70,7 @@ export function ActivityRow({
           aria-label="Delete"
           onClick={onDelete}
           disabled={deleting}
-          className="w-8 h-8 rounded-full flex items-center justify-center text-danger hover:bg-danger-soft"
+          className="w-10 h-10 rounded-full flex items-center justify-center text-danger hover:bg-danger-soft"
         >
           <Trash2 size={14} />
         </button>
