@@ -64,22 +64,27 @@ export function LogActivitySheet({
       payload.dose = String(form.get("dose") || "") || null;
     }
 
-    const res = await fetch("/api/activities", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    const data = await res.json();
-    setLoading(false);
+    try {
+      const res = await fetch("/api/activities", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
 
-    if (!res.ok) {
-      setError(data.error || "Couldn't save that. Please try again.");
-      return;
+      if (!res.ok) {
+        setError(data.error || "Couldn't save that. Please try again.");
+        return;
+      }
+
+      toast.success("Logged");
+      onClose();
+      router.refresh();
+    } catch {
+      setError("Couldn't reach the server. Check your connection and try again.");
+    } finally {
+      setLoading(false);
     }
-
-    toast.success("Logged");
-    onClose();
-    router.refresh();
   }
 
   const titles: Record<string, string> = {

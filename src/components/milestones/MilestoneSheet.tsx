@@ -57,22 +57,27 @@ export function MilestoneSheet({
       photoUrl: String(form.get("photoUrl") || "") || null,
     };
 
-    const res = await fetch("/api/milestones", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    const data = await res.json();
-    setLoading(false);
+    try {
+      const res = await fetch("/api/milestones", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
 
-    if (!res.ok) {
-      setError(data.error || "Couldn't save that. Please try again.");
-      return;
+      if (!res.ok) {
+        setError(data.error || "Couldn't save that. Please try again.");
+        return;
+      }
+
+      toast.success("Baby Step saved");
+      onClose();
+      router.refresh();
+    } catch {
+      setError("Couldn't reach the server. Check your connection and try again.");
+    } finally {
+      setLoading(false);
     }
-
-    toast.success("Baby Step saved");
-    onClose();
-    router.refresh();
   }
 
   return (

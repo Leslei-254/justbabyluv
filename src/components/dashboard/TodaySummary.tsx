@@ -5,14 +5,14 @@ export function TodaySummary({
   diapers,
   sleepMs,
   pumps,
-  medsCompleted,
+  medsLogged,
   milestones,
 }: {
   feeds: number;
   diapers: number;
   sleepMs: number;
   pumps: number;
-  medsCompleted: number;
+  medsLogged: number;
   milestones: number;
 }) {
   const sleepHours = Math.floor(sleepMs / (1000 * 60 * 60));
@@ -25,7 +25,7 @@ export function TodaySummary({
     { label: "Diapers", value: diapers },
     { label: "Sleep", value: sleepMs > 0 ? sleepLabel : "0m" },
     { label: "Pumping", value: pumps },
-    { label: "Meds done", value: medsCompleted },
+    { label: "Meds logged", value: medsLogged },
     { label: "Baby Steps", value: milestones },
   ];
 

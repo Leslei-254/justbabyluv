@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import Link from "next/link";
@@ -15,6 +15,7 @@ import { RecentMilestones } from "./RecentMilestones";
 import { MilestoneSheet } from "@/components/milestones/MilestoneSheet";
 import { ActivityRow } from "@/components/timeline/ActivityRow";
 import { Card, EmptyState } from "@/components/ui/primitives";
+import { startOfDay, endOfDay } from "@/lib/utils";
 import type { activities, babies, reminders, milestones } from "@/db/schema";
 import type { InferSelectModel } from "drizzle-orm";
 
@@ -23,27 +24,26 @@ type Baby = InferSelectModel<typeof babies>;
 type Reminder = InferSelectModel<typeof reminders>;
 type Milestone = InferSelectModel<typeof milestones>;
 
+const NETWORK_ERROR_MESSAGE = "Couldn't reach the server. Check your connection and try again.";
+
 export function DashboardView({
   baby,
   activeTimers,
+  bufferActivities,
   recentActivities,
+  overdueReminders,
   upcomingReminders,
+  bufferMilestones,
   recentMilestones,
-  todayStats,
 }: {
   baby: Baby;
   activeTimers: Activity[];
+  bufferActivities: Activity[];
   recentActivities: Activity[];
+  overdueReminders: Reminder[];
   upcomingReminders: Reminder[];
+  bufferMilestones: Milestone[];
   recentMilestones: Milestone[];
-  todayStats: {
-    feeds: number;
-    diapers: number;
-    sleepMs: number;
-    pumps: number;
-    medsCompleted: number;
-    milestones: number;
-  };
 }) {
   const router = useRouter();
   const [sheetType, setSheetType] = useState<
@@ -51,8 +51,32 @@ export function DashboardView({
   >(null);
   const [milestoneOpen, setMilestoneOpen] = useState(false);
   const [startingSleep, setStartingSleep] = useState(false);
+  const [stoppingSleep, setStoppingSleep] = useState(false);
 
   const activeSleep = activeTimers.find((a) => a.type === "SLEEP");
+
+  // Computed here (client-side) rather than on the server, so "today" always
+  // reflects the parent's own local calendar day — see dashboard/page.tsx for
+  // why the buffer arrives pre-widened.
+  const todayStats = useMemo(() => {
+    const todayStart = startOfDay(new Date());
+    const todayEnd = endOfDay(new Date());
+    const isToday = (d: Date) => d >= todayStart && d <= todayEnd;
+
+    const todaysActivities = bufferActivities.filter((a) => isToday(a.startTime));
+    const todaysMilestones = bufferMilestones.filter((m) => isToday(m.date));
+
+    return {
+      feeds: todaysActivities.filter((a) => a.type === "FEED").length,
+      diapers: todaysActivities.filter((a) => a.type === "DIAPER").length,
+      sleepMs: todaysActivities
+        .filter((a) => a.type === "SLEEP" && a.endTime)
+        .reduce((sum, a) => sum + (a.endTime!.getTime() - a.startTime.getTime()), 0),
+      pumps: todaysActivities.filter((a) => a.type === "PUMP").length,
+      medsLogged: todaysActivities.filter((a) => a.type === "MEDICATION").length,
+      milestones: todaysMilestones.length,
+    };
+  }, [bufferActivities, bufferMilestones]);
 
   async function handleAction(kind: QuickActionKind) {
     if (kind === "STEP") {
@@ -61,36 +85,48 @@ export function DashboardView({
     }
     if (kind === "SLEEP") {
       if (activeSleep) {
-        const res = await fetch(`/api/activities/${activeSleep.id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ endTime: new Date().toISOString() }),
-        });
-        if (!res.ok) {
-          toast.error("Couldn't stop sleep. Try again.");
-          return;
+        setStoppingSleep(true);
+        try {
+          const res = await fetch(`/api/activities/${activeSleep.id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ endTime: new Date().toISOString() }),
+          });
+          if (!res.ok) {
+            toast.error("Couldn't stop sleep. Try again.");
+            return;
+          }
+          toast.success("Sleep logged");
+          router.refresh();
+        } catch {
+          toast.error(NETWORK_ERROR_MESSAGE);
+        } finally {
+          setStoppingSleep(false);
         }
-        toast.success("Sleep logged");
-        router.refresh();
         return;
       }
       setStartingSleep(true);
-      const res = await fetch("/api/activities", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          babyId: baby.id,
-          type: "SLEEP",
-          startTime: new Date().toISOString(),
-        }),
-      });
-      setStartingSleep(false);
-      if (!res.ok) {
-        toast.error("Couldn't start sleep timer.");
-        return;
+      try {
+        const res = await fetch("/api/activities", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            babyId: baby.id,
+            type: "SLEEP",
+            startTime: new Date().toISOString(),
+          }),
+        });
+        if (!res.ok) {
+          toast.error("Couldn't start sleep timer.");
+          return;
+        }
+        toast.success("Sleep timer started");
+        router.refresh();
+      } catch {
+        toast.error(NETWORK_ERROR_MESSAGE);
+      } finally {
+        setStartingSleep(false);
       }
-      toast.success("Sleep timer started");
-      router.refresh();
       return;
     }
     setSheetType(kind);
@@ -111,11 +147,12 @@ export function DashboardView({
       <QuickActions
         onAction={handleAction}
         sleepActive={Boolean(activeSleep) || startingSleep}
+        sleepBusy={startingSleep || stoppingSleep}
       />
 
       <TodaySummary {...todayStats} />
 
-      <UpcomingReminders reminders={upcomingReminders} />
+      <UpcomingReminders overdue={overdueReminders} upcoming={upcomingReminders} />
 
       <Card>
         <div className="flex items-center justify-between mb-1">

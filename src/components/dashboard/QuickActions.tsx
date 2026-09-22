@@ -15,21 +15,25 @@ const actions: { kind: QuickActionKind; label: string; icon: typeof Milk }[] = [
 export function QuickActions({
   onAction,
   sleepActive,
+  sleepBusy,
 }: {
   onAction: (kind: QuickActionKind) => void;
   sleepActive?: boolean;
+  sleepBusy?: boolean;
 }) {
   return (
     <div className="grid grid-cols-3 gap-3" role="group" aria-label="Quick actions">
       {actions.map(({ kind, label, icon: Icon }) => {
         const isActiveSleep = kind === "SLEEP" && sleepActive;
+        const isDisabled = kind === "SLEEP" && sleepBusy;
         return (
           <button
             key={kind}
             onClick={() => onAction(kind)}
+            disabled={isDisabled}
             aria-pressed={kind === "SLEEP" ? Boolean(sleepActive) : undefined}
             className={cn(
-              "flex flex-col items-center justify-center gap-2 rounded-2xl border border-border bg-surface py-5 text-sm font-medium text-ink transition-colors hover:bg-rose-soft hover:border-rose/40 active:bg-rose-soft min-h-[92px]",
+              "flex flex-col items-center justify-center gap-2 rounded-2xl border border-border bg-surface py-5 text-sm font-medium text-ink transition-colors hover:bg-rose-soft hover:border-rose/40 active:bg-rose-soft min-h-[92px] disabled:opacity-60 disabled:cursor-not-allowed",
               isActiveSleep && "bg-rose-soft border-rose"
             )}
           >

@@ -31,18 +31,23 @@ export function ActiveTimerCard({
 
   async function stop() {
     setLoading(true);
-    const res = await fetch(`/api/activities/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ endTime: new Date().toISOString() }),
-    });
-    setLoading(false);
-    if (!res.ok) {
-      toast.error("Couldn't stop the timer. Try again.");
-      return;
+    try {
+      const res = await fetch(`/api/activities/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ endTime: new Date().toISOString() }),
+      });
+      if (!res.ok) {
+        toast.error("Couldn't stop the timer. Try again.");
+        return;
+      }
+      toast.success(`${labels[type].replace(" now", "")} logged`);
+      router.refresh();
+    } catch {
+      toast.error("Couldn't reach the server. Check your connection and try again.");
+    } finally {
+      setLoading(false);
     }
-    toast.success(`${labels[type].replace(" now", "")} logged`);
-    router.refresh();
   }
 
   return (
