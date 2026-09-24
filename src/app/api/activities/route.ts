@@ -6,6 +6,14 @@ import { getAuthedUser } from "@/lib/session";
 import { getOwnedBaby } from "@/lib/data";
 import { activitySchema } from "@/lib/validation";
 
+// Activity types that represent a timed session (start now, stop later).
+// Only one of each can be "open" (no endTime) per baby at a time.
+const OPEN_ENDED_LABELS: Partial<Record<(typeof ACTIVITY_TYPES)[number], string>> = {
+  SLEEP: "sleep session",
+  FEED: "feeding",
+  PUMP: "pumping session",
+};
+
 export async function GET(req: Request) {
   const user = await getAuthedUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -58,6 +66,27 @@ export async function POST(req: Request) {
       { error: parsed.error.issues[0]?.message ?? "Invalid input" },
       { status: 400 }
     );
+  }
+
+  // Server-side guard: a double tap, a second tab, or a direct API call
+  // must not be able to start a second concurrent open-ended session for
+  // the same baby. The client-side "is a timer already active?" check is
+  // a UX nicety, not a source of truth.
+  const openEndedLabel = OPEN_ENDED_LABELS[parsed.data.type];
+  if (!parsed.data.endTime && openEndedLabel) {
+    const existingOpen = await db.query.activities.findFirst({
+      where: and(
+        eq(activities.babyId, babyId),
+        eq(activities.type, parsed.data.type),
+        isNull(activities.endTime)
+      ),
+    });
+    if (existingOpen) {
+      return NextResponse.json(
+        { error: `A ${openEndedLabel} is already in progress for this baby.` },
+        { status: 409 }
+      );
+    }
   }
 
   const [activity] = await db

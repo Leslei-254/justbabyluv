@@ -49,6 +49,7 @@ export function DashboardView({
   const [sheetType, setSheetType] = useState<
     Exclude<Activity["type"], "SLEEP"> | null
   >(null);
+  const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
   const [milestoneOpen, setMilestoneOpen] = useState(false);
   const [startingSleep, setStartingSleep] = useState(false);
   const [stoppingSleep, setStoppingSleep] = useState(false);
@@ -170,7 +171,7 @@ export function DashboardView({
         ) : (
           <div>
             {recentActivities.map((a) => (
-              <ActivityRow key={a.id} activity={a} />
+              <ActivityRow key={a.id} activity={a} onEdit={setEditingActivity} />
             ))}
           </div>
         )}
@@ -184,6 +185,14 @@ export function DashboardView({
           onClose={() => setSheetType(null)}
           babyId={baby.id}
           type={sheetType}
+        />
+      )}
+      {editingActivity && (
+        <LogActivitySheet
+          open={Boolean(editingActivity)}
+          onClose={() => setEditingActivity(null)}
+          type={editingActivity.type}
+          activity={editingActivity}
         />
       )}
       <MilestoneSheet

@@ -6,7 +6,10 @@ import { toast } from "sonner";
 import { Sheet } from "@/components/ui/Sheet";
 import { Button } from "@/components/ui/Button";
 import { Field, Input, Select, Textarea, ErrorText } from "@/components/ui/primitives";
-import type { ActivityType } from "@/db/schema";
+import type { activities, ActivityType } from "@/db/schema";
+import type { InferSelectModel } from "drizzle-orm";
+
+type Activity = InferSelectModel<typeof activities>;
 
 function toLocalInputValue(date: Date) {
   const tzOffset = date.getTimezoneOffset() * 60000;
@@ -18,16 +21,20 @@ export function LogActivitySheet({
   onClose,
   babyId,
   type,
+  activity,
 }: {
   open: boolean;
   onClose: () => void;
-  babyId: string;
-  type: Exclude<ActivityType, "SLEEP">;
+  babyId?: string;
+  type: ActivityType;
+  /** When provided, the sheet edits this existing activity instead of creating a new one. */
+  activity?: Activity;
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const now = new Date();
+  const isEdit = Boolean(activity);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -39,12 +46,14 @@ export function LogActivitySheet({
     const endTimeRaw = String(form.get("endTime") || "");
 
     const payload: Record<string, unknown> = {
-      babyId,
-      type,
       startTime: startTime ? new Date(startTime).toISOString() : new Date().toISOString(),
       endTime: endTimeRaw ? new Date(endTimeRaw).toISOString() : null,
       notes: String(form.get("notes") || "") || null,
     };
+    if (!isEdit) {
+      payload.babyId = babyId;
+      payload.type = type;
+    }
 
     if (type === "FEED") {
       payload.subtype = String(form.get("subtype") || "bottle");
@@ -65,8 +74,9 @@ export function LogActivitySheet({
     }
 
     try {
-      const res = await fetch("/api/activities", {
-        method: "POST",
+      const url = isEdit ? `/api/activities/${activity!.id}` : "/api/activities";
+      const res = await fetch(url, {
+        method: isEdit ? "PATCH" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
@@ -77,7 +87,7 @@ export function LogActivitySheet({
         return;
       }
 
-      toast.success("Logged");
+      toast.success(isEdit ? "Updated" : "Logged");
       onClose();
       router.refresh();
     } catch {
@@ -88,14 +98,16 @@ export function LogActivitySheet({
   }
 
   const titles: Record<string, string> = {
-    FEED: "Log a feed",
-    DIAPER: "Log a diaper",
-    PUMP: "Log pumping",
-    MEDICATION: "Log medicine",
+    FEED: "feed",
+    DIAPER: "diaper",
+    PUMP: "pumping",
+    MEDICATION: "medicine",
+    SLEEP: "sleep",
   };
+  const sheetTitle = isEdit ? `Edit ${titles[type]}` : `Log a ${titles[type]}`;
 
   return (
-    <Sheet open={open} onClose={onClose} title={titles[type]}>
+    <Sheet open={open} onClose={onClose} title={sheetTitle}>
       <form onSubmit={onSubmit} className="space-y-4" noValidate>
         {type === "DIAPER" && (
           <div>
@@ -114,7 +126,7 @@ export function LogActivitySheet({
                     type="radio"
                     name="subtype"
                     value={opt.value}
-                    defaultChecked={opt.value === "wet"}
+                    defaultChecked={(activity?.subtype ?? "wet") === opt.value}
                     className="sr-only"
                   />
                   {opt.label}
@@ -128,7 +140,7 @@ export function LogActivitySheet({
           <>
             <div>
               <Field htmlFor="subtype">Feed type</Field>
-              <Select id="subtype" name="subtype" defaultValue="bottle">
+              <Select id="subtype" name="subtype" defaultValue={activity?.subtype ?? "bottle"}>
                 <option value="breast">Breastfeeding</option>
                 <option value="bottle">Bottle</option>
                 <option value="formula">Formula</option>
@@ -138,11 +150,18 @@ export function LogActivitySheet({
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Field htmlFor="amount">Amount</Field>
-                <Input id="amount" name="amount" type="number" step="0.1" min="0" />
+                <Input
+                  id="amount"
+                  name="amount"
+                  type="number"
+                  step="0.1"
+                  min="0"
+                  defaultValue={activity?.amount ?? ""}
+                />
               </div>
               <div>
                 <Field htmlFor="unit">Unit</Field>
-                <Select id="unit" name="unit" defaultValue="oz">
+                <Select id="unit" name="unit" defaultValue={activity?.unit ?? "oz"}>
                   <option value="oz">oz</option>
                   <option value="ml">ml</option>
                 </Select>
@@ -150,7 +169,7 @@ export function LogActivitySheet({
             </div>
             <div>
               <Field htmlFor="side">Breast side (if applicable)</Field>
-              <Select id="side" name="side" defaultValue="">
+              <Select id="side" name="side" defaultValue={activity?.side ?? ""}>
                 <option value="">N/A</option>
                 <option value="left">Left</option>
                 <option value="right">Right</option>
@@ -164,7 +183,7 @@ export function LogActivitySheet({
           <>
             <div>
               <Field htmlFor="side">Side</Field>
-              <Select id="side" name="side" defaultValue="both">
+              <Select id="side" name="side" defaultValue={activity?.side ?? "both"}>
                 <option value="left">Left</option>
                 <option value="right">Right</option>
                 <option value="both">Both</option>
@@ -173,11 +192,18 @@ export function LogActivitySheet({
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Field htmlFor="amount">Amount</Field>
-                <Input id="amount" name="amount" type="number" step="0.1" min="0" />
+                <Input
+                  id="amount"
+                  name="amount"
+                  type="number"
+                  step="0.1"
+                  min="0"
+                  defaultValue={activity?.amount ?? ""}
+                />
               </div>
               <div>
                 <Field htmlFor="unit">Unit</Field>
-                <Select id="unit" name="unit" defaultValue="oz">
+                <Select id="unit" name="unit" defaultValue={activity?.unit ?? "oz"}>
                   <option value="oz">oz</option>
                   <option value="ml">ml</option>
                 </Select>
@@ -190,11 +216,21 @@ export function LogActivitySheet({
           <>
             <div>
               <Field htmlFor="medicationName">Medication name</Field>
-              <Input id="medicationName" name="medicationName" required />
+              <Input
+                id="medicationName"
+                name="medicationName"
+                required
+                defaultValue={activity?.medicationName ?? ""}
+              />
             </div>
             <div>
               <Field htmlFor="dose">Dose</Field>
-              <Input id="dose" name="dose" placeholder="e.g. 2.5 mL" />
+              <Input
+                id="dose"
+                name="dose"
+                placeholder="e.g. 2.5 mL"
+                defaultValue={activity?.dose ?? ""}
+              />
             </div>
           </>
         )}
@@ -206,24 +242,45 @@ export function LogActivitySheet({
               id="startTime"
               name="startTime"
               type="datetime-local"
-              defaultValue={toLocalInputValue(now)}
+              defaultValue={toLocalInputValue(activity?.startTime ?? now)}
               required
             />
           </div>
           <div>
-            <Field htmlFor="endTime">End time (optional)</Field>
-            <Input id="endTime" name="endTime" type="datetime-local" />
+            <Field htmlFor="endTime">
+              End time {type === "FEED" || type === "PUMP" ? "" : "(optional)"}
+            </Field>
+            <Input
+              id="endTime"
+              name="endTime"
+              type="datetime-local"
+              defaultValue={
+                activity
+                  ? activity.endTime
+                    ? toLocalInputValue(activity.endTime)
+                    : ""
+                  : type === "FEED" || type === "PUMP"
+                    ? toLocalInputValue(now)
+                    : ""
+              }
+            />
+            {(type === "FEED" || type === "PUMP") && (
+              <p className="mt-1.5 text-xs text-ink-faint">
+                Clear this if {type === "FEED" ? "the feed" : "the pumping session"} is still
+                going — it&apos;ll show as in progress until you edit it with an end time.
+              </p>
+            )}
           </div>
         </div>
 
         <div>
           <Field htmlFor="notes">Notes (optional)</Field>
-          <Textarea id="notes" name="notes" rows={2} />
+          <Textarea id="notes" name="notes" rows={2} defaultValue={activity?.notes ?? ""} />
         </div>
 
         <ErrorText>{error}</ErrorText>
         <Button type="submit" disabled={loading} className="w-full" size="lg">
-          {loading ? "Saving…" : "Save"}
+          {loading ? "Saving…" : isEdit ? "Save changes" : "Save"}
         </Button>
       </form>
     </Sheet>

@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { CalendarClock, Sparkles } from "lucide-react";
 import { Card, EmptyState } from "@/components/ui/primitives";
 import { ActivityRow } from "./ActivityRow";
+import { LogActivitySheet } from "@/components/dashboard/LogActivitySheet";
 import { formatClockTime, formatDayLabel } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import type { activities, milestones, ActivityType } from "@/db/schema";
@@ -30,6 +31,7 @@ export function TimelineView({
   milestones: Milestone[];
 }) {
   const [filter, setFilter] = useState<(typeof filters)[number]["value"]>("ALL");
+  const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
 
   const grouped = useMemo(() => {
     type Entry =
@@ -104,7 +106,11 @@ export function TimelineView({
             <div>
               {entries.map((entry) =>
                 entry.kind === "activity" ? (
-                  <ActivityRow key={entry.data.id} activity={entry.data} />
+                  <ActivityRow
+                    key={entry.data.id}
+                    activity={entry.data}
+                    onEdit={setEditingActivity}
+                  />
                 ) : (
                   <MilestoneRow key={entry.data.id} milestone={entry.data} />
                 )
@@ -112,6 +118,15 @@ export function TimelineView({
             </div>
           </Card>
         ))
+      )}
+
+      {editingActivity && (
+        <LogActivitySheet
+          open={Boolean(editingActivity)}
+          onClose={() => setEditingActivity(null)}
+          type={editingActivity.type}
+          activity={editingActivity}
+        />
       )}
     </div>
   );

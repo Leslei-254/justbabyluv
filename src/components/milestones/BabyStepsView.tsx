@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Sparkles, Trash2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/primitives";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { MilestoneSheet } from "./MilestoneSheet";
 import { formatDayLabel } from "@/lib/utils";
 import type { milestones } from "@/db/schema";
@@ -22,16 +23,26 @@ export function BabyStepsView({
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Milestone | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
-  async function onDelete(id: string) {
-    if (!confirm("Delete this Baby Step?")) return;
-    const res = await fetch(`/api/milestones/${id}`, { method: "DELETE" });
-    if (!res.ok) {
-      toast.error("Couldn't delete that. Try again.");
-      return;
+  async function onDelete() {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/milestones/${deleteTarget.id}`, { method: "DELETE" });
+      if (!res.ok) {
+        toast.error("Couldn't delete that. Please try again.");
+        return;
+      }
+      toast.success("Deleted");
+      setDeleteTarget(null);
+      router.refresh();
+    } catch {
+      toast.error("Couldn't reach the server. Check your connection and try again.");
+    } finally {
+      setDeleting(false);
     }
-    toast.success("Deleted");
-    router.refresh();
   }
 
   return (
@@ -73,7 +84,7 @@ export function BabyStepsView({
                 </div>
                 <button
                   aria-label="Delete"
-                  onClick={() => onDelete(m.id)}
+                  onClick={() => setDeleteTarget(m)}
                   className="w-10 h-10 rounded-full flex items-center justify-center text-danger hover:bg-danger-soft shrink-0"
                 >
                   <Trash2 size={14} />
@@ -85,6 +96,19 @@ export function BabyStepsView({
       )}
 
       <MilestoneSheet open={open} onClose={() => setOpen(false)} babyId={babyId} />
+
+      <ConfirmDialog
+        open={Boolean(deleteTarget)}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={onDelete}
+        title="Delete Baby Step?"
+        description={
+          deleteTarget
+            ? `This will permanently delete "${deleteTarget.title}". This can't be undone.`
+            : ""
+        }
+        loading={deleting}
+      />
     </div>
   );
 }
