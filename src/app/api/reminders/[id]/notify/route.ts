@@ -26,5 +26,14 @@ export async function POST(
 
   const result = await sendEmail({ to: user.email, subject, text });
 
-  return NextResponse.json({ result });
+  if (!result.ok) {
+    // The detailed provider/internal error is already logged server-side by
+    // sendEmail() itself — never forward it to the client.
+    return NextResponse.json(
+      { error: "Unable to send the reminder email right now. Please try again." },
+      { status: 502 }
+    );
+  }
+
+  return NextResponse.json({ result: { ok: true, mode: result.mode } });
 }
