@@ -5,6 +5,7 @@ import {
   integer,
   real,
   index,
+  uniqueIndex,
 } from "drizzle-orm/sqlite-core";
 
 // ---------- Users ----------
@@ -98,6 +99,7 @@ export const emailEvents = sqliteTable("email_events", {
   type: text("type", { enum: ["welcome", "reminder"] }).notNull(),
   provider: text("provider").notNull(),
   providerMessageId: text("provider_message_id"),
+  idempotencyKey: text("idempotency_key"),
   status: text("status", { enum: ["queued", "sent", "failed"] }).notNull(),
   error: text("error"),
   sentAt: integer("sent_at", { mode: "timestamp" }),
@@ -106,6 +108,7 @@ export const emailEvents = sqliteTable("email_events", {
   userCreatedIdx: index("email_events_user_created_idx").on(table.userId, table.createdAt),
   statusCreatedIdx: index("email_events_status_created_idx").on(table.status, table.createdAt),
   providerMessageIdx: index("email_events_provider_message_idx").on(table.providerMessageId),
+  idempotencyKeyUniqueIdx: uniqueIndex("email_events_idempotency_key_idx").on(table.idempotencyKey),
 }));
 
 // ---------- Audit / operational events ----------
