@@ -131,10 +131,18 @@ Reminder and welcome emails use the shared email service in
   failure does not roll back the newly created account.
 - Email delivery lifecycle is persisted in `email_events` with `queued`, `sent`, and `failed` statuses; provider message IDs are stored when available, without storing full email bodies.
 - Email tracking failures are logged safely and do not block account creation or reminder delivery.
-- Welcome-email idempotency is intentionally reserved for Phase 11.
+- Welcome emails use a stable per-user idempotency key so successful delivery is not repeated by retries.
 
 Each reminder has a "send test email" action (visible when email is
 enabled) that exercises the same provider/fallback path.
+
+## Authentication hardening
+
+Phase 12 adds stronger signup validation, generic duplicate-account responses, bounded credential/session inputs, explicit JWT session expiry, and rate limiting for signup, credential authentication, and reminder email requests.
+
+The authentication rate limiter is intentionally dependency-free and process-local. On a multi-instance/serverless deployment, it is a best-effort abuse-control layer rather than a shared global quota; a shared durable limiter can be added later if abuse volume requires it.
+
+Production authentication requires a real `AUTH_SECRET`. Never commit production secrets or paste them into source files.
 
 ## Development mode
 
