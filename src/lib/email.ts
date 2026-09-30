@@ -16,6 +16,23 @@ function safeErrorMessage(error: unknown) {
   return error instanceof Error ? error.message.slice(0, 200) : "Email delivery failed";
 }
 
+export function buildReminderEmail(params: {
+  babyName: string;
+  title: string;
+  when: Date;
+}) {
+  const { babyName, title, when } = params;
+  const time = when.toLocaleString(undefined, {
+    weekday: "short",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+  return {
+    subject: `JustBaby Luv reminder: ${title}`,
+    text: `Hi,\nThis is your reminder for ${babyName}:\n${title} at ${time}.\n\nOpen Baby Care to mark it complete.`,
+  };
+}
+
 export async function sendEmail({ to, subject, text, html }: SendEmailInput) {
   if (!resendClient) {
     logServerEvent({
