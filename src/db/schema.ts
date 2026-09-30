@@ -4,6 +4,7 @@ import {
   text,
   integer,
   real,
+  index,
 } from "drizzle-orm/sqlite-core";
 
 // ---------- Users ----------
@@ -26,7 +27,30 @@ export const users = sqliteTable("users", {
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .default(sql`(unixepoch())`),
-});
+}, (table) => ({
+  babyDatetimeIdx: index("reminders_baby_datetime_idx").on(table.babyId, table.datetime),
+}));
+
+// ---------- Audit / operational events ----------
+export const auditEvents = sqliteTable("audit_events", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  userId: text("user_id").references(() => users.id, { onDelete: "set null" }),
+  babyId: text("baby_id").references(() => babies.id, { onDelete: "set null" }),
+  eventType: text("event_type").notNull(),
+  entityType: text("entity_type"),
+  entityId: text("entity_id"),
+  metadata: text("metadata"),
+  requestId: text("request_id"),
+  createdAt: integer("created_at", { mode: "timestamp" })
+    .notNull()
+    .default(sql`(unixepoch())`),
+}, (table) => ({
+  userCreatedIdx: index("audit_events_user_created_idx").on(table.userId, table.createdAt),
+  typeCreatedIdx: index("audit_events_type_created_idx").on(table.eventType, table.createdAt),
+  requestIdx: index("audit_events_request_idx").on(table.requestId),
+}));
 
 // ---------- Babies ----------
 export const babies = sqliteTable("babies", {
@@ -45,7 +69,9 @@ export const babies = sqliteTable("babies", {
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .default(sql`(unixepoch())`),
-});
+}, (table) => ({
+  userIdIdx: index("babies_user_id_idx").on(table.userId),
+}));
 
 // ---------- Activities (feed / diaper / sleep / pump / medication) ----------
 export const ACTIVITY_TYPES = [
@@ -82,7 +108,9 @@ export const activities = sqliteTable("activities", {
   updatedAt: integer("updated_at", { mode: "timestamp" })
     .notNull()
     .default(sql`(unixepoch())`),
-});
+}, (table) => ({
+  babyStartTimeIdx: index("activities_baby_start_time_idx").on(table.babyId, table.startTime),
+}));
 
 // ---------- Milestones ("Baby Steps") ----------
 export const milestones = sqliteTable("milestones", {
@@ -99,7 +127,9 @@ export const milestones = sqliteTable("milestones", {
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .default(sql`(unixepoch())`),
-});
+}, (table) => ({
+  babyDateIdx: index("milestones_baby_date_idx").on(table.babyId, table.date),
+}));
 
 // ---------- Reminders ----------
 export const REMINDER_TYPES = [
