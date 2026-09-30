@@ -5,6 +5,7 @@ import { activities, ACTIVITY_TYPES } from "@/db/schema";
 import { getAuthedUser } from "@/lib/session";
 import { getOwnedBaby } from "@/lib/data";
 import { activitySchema } from "@/lib/validation";
+import { auditEvent, AUDIT_EVENT_TYPES, getRequestId } from "@/lib/audit";
 
 // Activity types that represent a timed session (start now, stop later).
 // Only one of each can be "open" (no endTime) per baby at a time.
@@ -50,6 +51,7 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+  const requestId = getRequestId(req);
   const user = await getAuthedUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -93,6 +95,16 @@ export async function POST(req: Request) {
     .insert(activities)
     .values({ ...parsed.data, babyId })
     .returning();
+
+  await auditEvent({
+    eventType: AUDIT_EVENT_TYPES.ACTIVITY_CREATE,
+    userId: user.id,
+    babyId,
+    entityType: "activity",
+    entityId: activity.id,
+    requestId,
+    metadata: { activityType: activity.type },
+  });
 
   return NextResponse.json({ activity }, { status: 201 });
 }
