@@ -1,5 +1,6 @@
 import { db } from "@/db";
 import { auditEvents } from "@/db/schema";
+import { logServerError } from "@/lib/logger";
 
 export const AUDIT_EVENT_TYPES = {
   ACCOUNT_SIGNUP: "account.signup",
@@ -35,10 +36,6 @@ export function getRequestId(req: Request) {
   return req.headers.get("x-request-id")?.trim() || crypto.randomUUID();
 }
 
-/**
- * Writes one sanitized operational event.
- * Audit persistence must never break the user-facing operation.
- */
 export async function auditEvent(input: AuditEventInput) {
   try {
     await db.insert(auditEvents).values({
@@ -50,7 +47,13 @@ export async function auditEvent(input: AuditEventInput) {
       requestId: input.requestId ?? null,
       metadata: input.metadata ? JSON.stringify(input.metadata) : null,
     });
-  } catch {
-    // Audit persistence is intentionally best-effort.
+  } catch (error) {
+    logServerError({
+      event: "audit.persist_failed",
+      requestId: input.requestId,
+      userId: input.userId,
+      metadata: { eventType: input.eventType },
+      error,
+    });
   }
 }
