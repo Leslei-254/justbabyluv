@@ -57,22 +57,25 @@ export async function POST(req: Request) {
     });
 
     const welcome = buildWelcomeEmail(user.name);
-    const emailEventId = await queueEmailEvent({
+    const emailEvent = await queueEmailEvent({
       userId: user.id,
       email: user.email,
       type: "welcome",
       provider: process.env.RESEND_API_KEY ? "resend" : "dev-fallback",
+      idempotencyKey: `welcome:${user.id}`,
     });
 
-    const emailResult = await sendEmail({
-      to: user.email,
-      subject: welcome.subject,
-      text: welcome.text,
-      html: welcome.html,
-    });
+    const emailResult = emailEvent.shouldSend
+      ? await sendEmail({
+          to: user.email,
+          subject: welcome.subject,
+          text: welcome.text,
+          html: welcome.html,
+        })
+      : { ok: true as const, mode: "already-sent" as const, providerMessageId: null };
 
     await completeEmailEvent({
-      id: emailEventId,
+      id: emailEvent.id,
       userId: user.id,
       ok: emailResult.ok,
       providerMessageId: emailResult.ok ? emailResult.providerMessageId : null,

@@ -29,7 +29,7 @@ export async function POST(
 
   await auditEvent({ eventType: AUDIT_EVENT_TYPES.EMAIL_ATTEMPTED, userId: user.id, babyId: reminder.babyId, entityType: "reminder", entityId: reminder.id, requestId, metadata: { channel: "email" } });
 
-  const emailEventId = await queueEmailEvent({
+  const emailEvent = await queueEmailEvent({
     userId: user.id,
     email: user.email,
     type: "reminder",
@@ -39,7 +39,7 @@ export async function POST(
   const result = await sendEmail({ to: user.email, subject, text });
 
   await completeEmailEvent({
-    id: emailEventId,
+    id: emailEvent.id,
     userId: user.id,
     ok: result.ok,
     providerMessageId: result.ok ? result.providerMessageId : null,
