@@ -98,8 +98,9 @@ See `.env.example` for the full list with comments. Summary:
 | `DATABASE_URL` | Yes | libSQL/SQLite connection string |
 | `AUTH_SECRET` | Yes (prod) | Signs NextAuth session tokens — generate with `openssl rand -base64 32` |
 | `NEXTAUTH_URL` | Yes (prod) | Base URL of the deployed app |
-| `RESEND_API_KEY` | No | Enables real email sending via Resend; omit to use the console fallback |
-| `EMAIL_FROM` | No | "From" address for reminder emails |
+| `RESEND_API_KEY` | No | Enables real reminder and welcome email sending via Resend; omit to use the safe fallback |
+| `EMAIL_FROM` | No | "From" address for transactional emails |
+| `APP_URL` | Yes (prod) | Public application origin used by welcome-email links and brand assets |
 
 No secrets are committed to this repository. `.env` is git-ignored;
 `.env.example` contains variable names and safe local defaults only.
@@ -118,17 +119,21 @@ data any time from **Settings → Demo data**.
 
 ## How email works
 
-Reminders can optionally send an email notification. The email service
-(`src/lib/email.ts`) is a single, reusable function:
+Reminder and welcome emails use the shared email service in
+`src/lib/email.ts`.
 
-- If `RESEND_API_KEY` is set, it sends real email via Resend.
-- If it is **not** set, the app doesn't fail or throw — it safely logs the
-  email (recipient, subject, body) to the server console instead, so every
-  flow keeps working in local development without any provider configured.
+- If `RESEND_API_KEY` is set, the app sends real email through Resend.
+- If it is not set, the app keeps the user-facing flow working with a safe
+  development fallback.
+- `APP_URL` is used for welcome-email links and the local JustBaby Luv brand
+  mark, so production must set it to the public application origin.
+- Welcome emails are sent after successful account creation. Email delivery
+  failure does not roll back the newly created account.
+- Persistent email delivery tracking and idempotent welcome-email handling are
+  intentionally reserved for the later email-tracking phases.
 
 Each reminder has a "send test email" action (visible when email is
-enabled) that exercises this exact path, so you can verify provider/fallback
-behavior directly from the UI.
+enabled) that exercises the same provider/fallback path.
 
 ## Development mode
 
