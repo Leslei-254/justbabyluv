@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 import { getAuthedUser } from "@/lib/session";
-import { db } from "@/db";
-import { emailEvents } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { queueEmailEvent, completeEmailEvent } from "@/lib/email-events";
 import { getOwnedReminder, getOwnedBaby } from "@/lib/data";
 import { sendEmail, buildReminderEmail } from "@/lib/email";
 import { auditEvent, AUDIT_EVENT_TYPES, getRequestId } from "@/lib/audit";
@@ -31,34 +29,21 @@ export async function POST(
 
   await auditEvent({ eventType: AUDIT_EVENT_TYPES.EMAIL_ATTEMPTED, userId: user.id, babyId: reminder.babyId, entityType: "reminder", entityId: reminder.id, requestId, metadata: { channel: "email" } });
 
-  const [emailEvent] = await db
-    .insert(emailEvents)
-    .values({
-      userId: user.id,
-      email: user.email,
-      type: "reminder",
-      provider: process.env.RESEND_API_KEY ? "resend" : "dev-fallback",
-      status: "queued",
-    })
-    .returning({ id: emailEvents.id });
+  const emailEventId = await queueEmailEvent({
+    userId: user.id,
+    email: user.email,
+    type: "reminder",
+    provider: process.env.RESEND_API_KEY ? "resend" : "dev-fallback",
+  });
 
   const result = await sendEmail({ to: user.email, subject, text });
 
-  await db
-    .update(emailEvents)
-    .set(
-      result.ok
-        ? {
-            status: "sent",
-            providerMessageId: result.providerMessageId,
-            sentAt: new Date(),
-          }
-        : {
-            status: "failed",
-            error: "Email delivery failed",
-          }
-    )
-    .where(eq(emailEvents.id, emailEvent.id));
+  await completeEmailEvent({
+    id: emailEventId,
+    userId: user.id,
+    ok: result.ok,
+    providerMessageId: result.ok ? result.providerMessageId : null,
+  });
 
   if (!result.ok) {
     await auditEvent({ eventType: AUDIT_EVENT_TYPES.EMAIL_FAILED, userId: user.id, babyId: reminder.babyId, entityType: "reminder", entityId: reminder.id, requestId, metadata: { channel: "email" } });
