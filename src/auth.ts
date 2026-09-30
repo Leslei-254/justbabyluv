@@ -6,8 +6,13 @@ import { users } from "@/db/schema";
 import { verifyPassword } from "@/lib/password";
 import { auditEvent, AUDIT_EVENT_TYPES } from "@/lib/audit";
 
+const SESSION_MAX_AGE_SECONDS = 30 * 24 * 60 * 60;
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  session: { strategy: "jwt" },
+  session: {
+    strategy: "jwt",
+    maxAge: SESSION_MAX_AGE_SECONDS,
+  },
   trustHost: true,
   pages: {
     signIn: "/login",
@@ -20,28 +25,58 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         password: { label: "Password", type: "password" },
       },
       authorize: async (credentials) => {
-        const email = credentials?.email as string | undefined;
-        const password = credentials?.password as string | undefined;
-        if (!email || !password) {
-          await auditEvent({ eventType: AUDIT_EVENT_TYPES.AUTH_FAILURE, metadata: { method: "credentials", reason: "missing_credentials" } });
+        const email = credentials?.email;
+        const password = credentials?.password;
+
+        if (typeof email !== "string" || typeof password !== "string") {
+          await auditEvent({
+            eventType: AUDIT_EVENT_TYPES.AUTH_FAILURE,
+            metadata: { method: "credentials", reason: "missing_credentials" },
+          });
+          return null;
+        }
+
+        const normalizedEmail = email.trim().toLowerCase();
+        if (
+          !normalizedEmail ||
+          normalizedEmail.length > 200 ||
+          password.length === 0 ||
+          password.length > 200
+        ) {
+          await auditEvent({
+            eventType: AUDIT_EVENT_TYPES.AUTH_FAILURE,
+            metadata: { method: "credentials", reason: "invalid_credentials" },
+          });
           return null;
         }
 
         const user = await db.query.users.findFirst({
-          where: eq(users.email, email.toLowerCase().trim()),
+          where: eq(users.email, normalizedEmail),
         });
+
         if (!user) {
-          await auditEvent({ eventType: AUDIT_EVENT_TYPES.AUTH_FAILURE, metadata: { method: "credentials", reason: "invalid_credentials" } });
+          await auditEvent({
+            eventType: AUDIT_EVENT_TYPES.AUTH_FAILURE,
+            metadata: { method: "credentials", reason: "invalid_credentials" },
+          });
           return null;
         }
 
         const valid = await verifyPassword(password, user.passwordHash);
         if (!valid) {
-          await auditEvent({ eventType: AUDIT_EVENT_TYPES.AUTH_FAILURE, userId: user.id, metadata: { method: "credentials", reason: "invalid_credentials" } });
+          await auditEvent({
+            eventType: AUDIT_EVENT_TYPES.AUTH_FAILURE,
+            userId: user.id,
+            metadata: { method: "credentials", reason: "invalid_credentials" },
+          });
           return null;
         }
 
-        await auditEvent({ eventType: AUDIT_EVENT_TYPES.AUTH_SUCCESS, userId: user.id, metadata: { method: "credentials" } });
+        await auditEvent({
+          eventType: AUDIT_EVENT_TYPES.AUTH_SUCCESS,
+          userId: user.id,
+          metadata: { method: "credentials" },
+        });
 
         return {
           id: user.id,
