@@ -5,11 +5,13 @@ import { reminders } from "@/db/schema";
 import { getAuthedUser } from "@/lib/session";
 import { getOwnedReminder } from "@/lib/data";
 import { reminderUpdateSchema } from "@/lib/validation";
+import { auditEvent, AUDIT_EVENT_TYPES, getRequestId } from "@/lib/audit";
 
 export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const requestId = getRequestId(req);
   const user = await getAuthedUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -32,6 +34,8 @@ export async function PATCH(
     .where(eq(reminders.id, id))
     .returning();
 
+  const eventType = updated.completed && !existing.completed ? AUDIT_EVENT_TYPES.REMINDER_COMPLETE : AUDIT_EVENT_TYPES.REMINDER_UPDATE;
+  await auditEvent({ eventType, userId: user.id, babyId: existing.babyId, entityType: "reminder", entityId: id, requestId, metadata: { reminderType: updated.type, completed: updated.completed } });
   return NextResponse.json({ reminder: updated });
 }
 
@@ -47,5 +51,6 @@ export async function DELETE(
   if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   await db.delete(reminders).where(eq(reminders.id, id));
+  await auditEvent({ eventType: AUDIT_EVENT_TYPES.REMINDER_DELETE, userId: user.id, babyId: existing.babyId, entityType: "reminder", entityId: id, requestId, metadata: { reminderType: existing.type } });
   return NextResponse.json({ ok: true });
 }
