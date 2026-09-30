@@ -5,6 +5,9 @@ import { db } from "@/db";
 import { users } from "@/db/schema";
 import { hashPassword } from "@/lib/password";
 import { auditEvent, AUDIT_EVENT_TYPES, getRequestId } from "@/lib/audit";
+import { buildWelcomeEmail } from "@/lib/email-templates";
+import { sendEmail } from "@/lib/email";
+import { logServerEvent, logServerError } from "@/lib/logger";
 
 const signupSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(100),
@@ -45,14 +48,43 @@ export async function POST(req: Request) {
       .values({ name, email: normalizedEmail, passwordHash })
       .returning({ id: users.id, name: users.name, email: users.email });
 
-    await auditEvent({ eventType: AUDIT_EVENT_TYPES.ACCOUNT_SIGNUP, userId: user.id, requestId, metadata: { method: "credentials" } });
+    await auditEvent({
+      eventType: AUDIT_EVENT_TYPES.ACCOUNT_SIGNUP,
+      userId: user.id,
+      requestId,
+      metadata: { method: "credentials" },
+    });
+
+    const welcome = buildWelcomeEmail(user.name);
+    const emailResult = await sendEmail({
+      to: user.email,
+      subject: welcome.subject,
+      text: welcome.text,
+      html: welcome.html,
+    });
+
+    if (!emailResult.ok) {
+      logServerError({
+        event: "email.welcome_failed",
+        route: "/api/signup",
+        requestId,
+        userId: user.id,
+        metadata: { provider: "resend" },
+        error: new Error("Welcome email delivery failed"),
+      });
+    } else {
+      logServerEvent({
+        severity: "info",
+        event: "email.welcome_sent",
+        route: "/api/signup",
+        requestId,
+        userId: user.id,
+        metadata: { mode: emailResult.mode },
+      });
+    }
+
     return NextResponse.json({ user }, { status: 201 });
   } catch (err) {
-    // The pre-check above handles the common case, but the database's unique
-    // constraint on users.email is the final authority (e.g. two concurrent
-    // signups for the same email racing past the pre-check). Drizzle wraps
-    // the underlying libsql error in a DrizzleQueryError, so the SQLite error
-    // code lives on `err.cause`, not on `err` itself — check both defensively.
     const sqliteCode =
       (err as { code?: string })?.code ??
       (err as { cause?: { code?: string } })?.cause?.code;
@@ -66,7 +98,11 @@ export async function POST(req: Request) {
     }
 
     console.error("[signup] Unexpected error creating user:", err);
-    await auditEvent({ eventType: AUDIT_EVENT_TYPES.ERROR, requestId, metadata: { route: "/api/signup", operation: "create_user" } });
+    await auditEvent({
+      eventType: AUDIT_EVENT_TYPES.ERROR,
+      requestId,
+      metadata: { route: "/api/signup", operation: "create_user" },
+    });
     return NextResponse.json(
       { error: "Something went wrong. Please try again." },
       { status: 500 }
