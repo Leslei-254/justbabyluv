@@ -12,8 +12,15 @@ import { queueEmailEvent, completeEmailEvent } from "@/lib/email-events";
 
 const signupSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(100),
-  email: z.string().trim().email("Enter a valid email").max(200),
-  password: z.string().min(8, "Password must be at least 8 characters").max(200),
+  email: z.string().trim().toLowerCase().email("Enter a valid email").max(200),
+  password: z
+    .string()
+    .min(12, "Password must be at least 12 characters")
+    .max(200)
+    .refine(
+      (value) => /[a-zA-Z]/.test(value) && /[0-9]/.test(value),
+      "Password must contain at least one letter and one number"
+    ),
 });
 
 export async function POST(req: Request) {
@@ -28,15 +35,16 @@ export async function POST(req: Request) {
     );
   }
 
-  const { name, email, password } = parsed.data;
-  const normalizedEmail = email.toLowerCase().trim();
+  const { name, password } = parsed.data;
+  const normalizedEmail = parsed.data.email;
 
   const existing = await db.query.users.findFirst({
     where: eq(users.email, normalizedEmail),
   });
+
   if (existing) {
     return NextResponse.json(
-      { error: "An account with this email already exists" },
+      { error: "Unable to create the account with these details." },
       { status: 409 }
     );
   }
@@ -48,6 +56,10 @@ export async function POST(req: Request) {
       .insert(users)
       .values({ name, email: normalizedEmail, passwordHash })
       .returning({ id: users.id, name: users.name, email: users.email });
+
+    if (!user) {
+      throw new Error("User creation returned no user");
+    }
 
     await auditEvent({
       eventType: AUDIT_EVENT_TYPES.ACCOUNT_SIGNUP,
@@ -72,7 +84,11 @@ export async function POST(req: Request) {
           text: welcome.text,
           html: welcome.html,
         })
-      : { ok: true as const, mode: "already-sent" as const, providerMessageId: null };
+      : {
+          ok: true as const,
+          mode: "already-sent" as const,
+          providerMessageId: null,
+        };
 
     await completeEmailEvent({
       id: emailEvent.id,
@@ -106,21 +122,30 @@ export async function POST(req: Request) {
     const sqliteCode =
       (err as { code?: string })?.code ??
       (err as { cause?: { code?: string } })?.cause?.code;
-    const isDuplicateEmail = sqliteCode === "SQLITE_CONSTRAINT";
+    const isDuplicateEmail =
+      sqliteCode === "SQLITE_CONSTRAINT" || sqliteCode === "SQLITE_CONSTRAINT_UNIQUE";
 
     if (isDuplicateEmail) {
       return NextResponse.json(
-        { error: "An account with this email already exists" },
+        { error: "Unable to create the account with these details." },
         { status: 409 }
       );
     }
 
-    console.error("[signup] Unexpected error creating user:", err);
+    logServerError({
+      event: "signup.create_user_failed",
+      route: "/api/signup",
+      requestId,
+      metadata: { operation: "create_user" },
+      error: err,
+    });
+
     await auditEvent({
       eventType: AUDIT_EVENT_TYPES.ERROR,
       requestId,
       metadata: { route: "/api/signup", operation: "create_user" },
     });
+
     return NextResponse.json(
       { error: "Something went wrong. Please try again." },
       { status: 500 }
