@@ -4,6 +4,7 @@ import { queueEmailEvent, completeEmailEvent } from "@/lib/email-events";
 import { getOwnedReminder, getOwnedBaby } from "@/lib/data";
 import { sendEmail, buildReminderEmail } from "@/lib/email";
 import { auditEvent, AUDIT_EVENT_TYPES, getRequestId } from "@/lib/audit";
+import { consumeRateLimit, getClientAddress } from "@/lib/rate-limit";
 
 export async function POST(
   req: Request,
@@ -11,15 +12,39 @@ export async function POST(
 ) {
   const requestId = getRequestId(req);
   const user = await getAuthedUser();
-  if (!user?.email)
+  if (!user?.email) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const address = getClientAddress(req);
+  const rate = consumeRateLimit(
+    `email-reminder:user:${user.id}:ip:${address}`,
+    10,
+    15 * 60 * 1000
+  );
+  if (!rate.allowed) {
+    return NextResponse.json(
+      { error: "Too many email requests. Please try again later." },
+      {
+        status: 429,
+        headers: {
+          "Retry-After": String(rate.retryAfterSeconds),
+          "Cache-Control": "no-store",
+        },
+      }
+    );
+  }
 
   const { id } = await params;
   const reminder = await getOwnedReminder(user.id, id);
-  if (!reminder) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!reminder) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
 
   const baby = await getOwnedBaby(user.id, reminder.babyId);
-  if (!baby) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (!baby) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
 
   const { subject, text } = buildReminderEmail({
     babyName: baby.name,
@@ -27,7 +52,15 @@ export async function POST(
     when: reminder.datetime,
   });
 
-  await auditEvent({ eventType: AUDIT_EVENT_TYPES.EMAIL_ATTEMPTED, userId: user.id, babyId: reminder.babyId, entityType: "reminder", entityId: reminder.id, requestId, metadata: { channel: "email" } });
+  await auditEvent({
+    eventType: AUDIT_EVENT_TYPES.EMAIL_ATTEMPTED,
+    userId: user.id,
+    babyId: reminder.babyId,
+    entityType: "reminder",
+    entityId: reminder.id,
+    requestId,
+    metadata: { channel: "email" },
+  });
 
   const emailEvent = await queueEmailEvent({
     userId: user.id,
@@ -46,15 +79,30 @@ export async function POST(
   });
 
   if (!result.ok) {
-    await auditEvent({ eventType: AUDIT_EVENT_TYPES.EMAIL_FAILED, userId: user.id, babyId: reminder.babyId, entityType: "reminder", entityId: reminder.id, requestId, metadata: { channel: "email" } });
-    // The detailed provider/internal error is already logged server-side by
-    // sendEmail() itself — never forward it to the client.
+    await auditEvent({
+      eventType: AUDIT_EVENT_TYPES.EMAIL_FAILED,
+      userId: user.id,
+      babyId: reminder.babyId,
+      entityType: "reminder",
+      entityId: reminder.id,
+      requestId,
+      metadata: { channel: "email" },
+    });
     return NextResponse.json(
       { error: "Unable to send the reminder email right now. Please try again." },
       { status: 502 }
     );
   }
 
-  await auditEvent({ eventType: AUDIT_EVENT_TYPES.EMAIL_SENT, userId: user.id, babyId: reminder.babyId, entityType: "reminder", entityId: reminder.id, requestId, metadata: { channel: "email", mode: result.mode } });
+  await auditEvent({
+    eventType: AUDIT_EVENT_TYPES.EMAIL_SENT,
+    userId: user.id,
+    babyId: reminder.babyId,
+    entityType: "reminder",
+    entityId: reminder.id,
+    requestId,
+    metadata: { channel: "email", mode: result.mode },
+  });
+
   return NextResponse.json({ result: { ok: true, mode: result.mode } });
 }
