@@ -37,9 +37,7 @@ export function getRequestId(req: Request) {
 
 /**
  * Writes one sanitized operational event.
- *
- * Audit logging must never break the user-facing operation, so database
- * failures are swallowed after emitting a minimal server-side log.
+ * Audit persistence must never break the user-facing operation.
  */
 export async function auditEvent(input: AuditEventInput) {
   try {
@@ -52,7 +50,7 @@ export async function auditEvent(input: AuditEventInput) {
       requestId: input.requestId ?? null,
       metadata: input.metadata ? JSON.stringify(input.metadata) : null,
     });
-  } catch (error) {
-    console.error("[audit] Failed to persist audit event:", error);
+  } catch {
+    // Audit persistence is intentionally best-effort.
   }
 }
