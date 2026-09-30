@@ -35,7 +35,7 @@ export async function PATCH(
     .where(eq(reminders.id, id))
     .returning();
 
-  const eventType = updated.completed && !existing.completed ? AUDIT_EVENT_TYPES.REMINDER_COMPLETE : AUDIT_EVENT_TYPES.REMINDER_UPDATE;
+  const eventType = updated.completed && !existing.completed ? AUDIT_EVENT_TYPES.REMINDER_COMPLETE : updated.snoozedUntil && updated.snoozedUntil.getTime() !== existing.snoozedUntil?.getTime() ? AUDIT_EVENT_TYPES.REMINDER_SNOOZE : AUDIT_EVENT_TYPES.REMINDER_UPDATE;
   await auditEvent({ eventType, userId: user.id, babyId: existing.babyId, entityType: "reminder", entityId: id, requestId, metadata: { reminderType: updated.type, completed: updated.completed } });
   return NextResponse.json({ reminder: updated });
 }
