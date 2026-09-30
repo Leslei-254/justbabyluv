@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
-import { z } from "zod";
 import { db } from "@/db";
 import { users } from "@/db/schema";
 import { hashPassword } from "@/lib/password";
@@ -9,19 +8,7 @@ import { buildWelcomeEmail } from "@/lib/email-templates";
 import { sendEmail } from "@/lib/email";
 import { logServerEvent, logServerError } from "@/lib/logger";
 import { queueEmailEvent, completeEmailEvent } from "@/lib/email-events";
-
-const signupSchema = z.object({
-  name: z.string().trim().min(1, "Name is required").max(100),
-  email: z.string().trim().toLowerCase().email("Enter a valid email").max(200),
-  password: z
-    .string()
-    .min(12, "Password must be at least 12 characters")
-    .max(200)
-    .refine(
-      (value) => /[a-zA-Z]/.test(value) && /[0-9]/.test(value),
-      "Password must contain at least one letter and one number"
-    ),
-});
+import { signupSchema } from "@/lib/auth-validation";
 
 export async function POST(req: Request) {
   const requestId = getRequestId(req);
