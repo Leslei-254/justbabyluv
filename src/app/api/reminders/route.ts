@@ -5,6 +5,7 @@ import { reminders } from "@/db/schema";
 import { getAuthedUser } from "@/lib/session";
 import { getOwnedBaby } from "@/lib/data";
 import { reminderSchema } from "@/lib/validation";
+import { auditEvent, AUDIT_EVENT_TYPES, getRequestId } from "@/lib/audit";
 
 export async function GET(req: Request) {
   const user = await getAuthedUser();
@@ -26,6 +27,7 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+  const requestId = getRequestId(req);
   const user = await getAuthedUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -49,5 +51,6 @@ export async function POST(req: Request) {
     .values({ ...parsed.data, babyId })
     .returning();
 
+  await auditEvent({ eventType: AUDIT_EVENT_TYPES.REMINDER_CREATE, userId: user.id, babyId, entityType: "reminder", entityId: reminder.id, requestId, metadata: { reminderType: reminder.type, emailEnabled: reminder.emailEnabled } });
   return NextResponse.json({ reminder }, { status: 201 });
 }

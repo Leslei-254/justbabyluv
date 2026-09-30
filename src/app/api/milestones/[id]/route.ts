@@ -5,11 +5,13 @@ import { milestones } from "@/db/schema";
 import { getAuthedUser } from "@/lib/session";
 import { getOwnedMilestone } from "@/lib/data";
 import { milestoneSchema } from "@/lib/validation";
+import { auditEvent, getRequestId } from "@/lib/audit";
 
 export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const requestId = getRequestId(req);
   const user = await getAuthedUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -32,13 +34,15 @@ export async function PATCH(
     .where(eq(milestones.id, id))
     .returning();
 
+  await auditEvent({ eventType: "milestone.update", userId: user.id, babyId: existing.babyId, entityType: "milestone", entityId: id, requestId, metadata: {} });
   return NextResponse.json({ milestone: updated });
 }
 
 export async function DELETE(
-  _req: Request,
+  req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const requestId = getRequestId(req);
   const user = await getAuthedUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -47,5 +51,6 @@ export async function DELETE(
   if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   await db.delete(milestones).where(eq(milestones.id, id));
+  await auditEvent({ eventType: "milestone.delete", userId: user.id, babyId: existing.babyId, entityType: "milestone", entityId: id, requestId, metadata: {} });
   return NextResponse.json({ ok: true });
 }

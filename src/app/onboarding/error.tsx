@@ -1,0 +1,23 @@
+"use client";
+
+import { useEffect } from "react";
+import { RouteError } from "@/components/errors/RouteError";
+
+export default function OnboardingError({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
+  useEffect(() => {
+    console.error(JSON.stringify({
+      severity: "error",
+      event: "client.error_boundary",
+      area: "onboarding",
+      ...(error.digest ? { digest: error.digest } : {}),
+    }));
+  }, [error.digest]);
+
+  return <RouteError error={error} reset={reset} area="onboarding" />;
+}
