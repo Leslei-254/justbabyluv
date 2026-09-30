@@ -90,6 +90,24 @@ export const reminders = sqliteTable("reminders", {
   babyDatetimeIdx: index("reminders_baby_datetime_idx").on(table.babyId, table.datetime),
 }));
 
+// ---------- Email delivery tracking ----------
+export const emailEvents = sqliteTable("email_events", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  userId: text("user_id").references(() => users.id, { onDelete: "set null" }),
+  email: text("email").notNull(),
+  type: text("type", { enum: ["welcome", "reminder"] }).notNull(),
+  provider: text("provider").notNull(),
+  providerMessageId: text("provider_message_id"),
+  status: text("status", { enum: ["queued", "sent", "failed"] }).notNull(),
+  error: text("error"),
+  sentAt: integer("sent_at", { mode: "timestamp" }),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull().default(sql`(unixepoch())`),
+}, (table) => ({
+  userCreatedIdx: index("email_events_user_created_idx").on(table.userId, table.createdAt),
+  statusCreatedIdx: index("email_events_status_created_idx").on(table.status, table.createdAt),
+  providerMessageIdx: index("email_events_provider_message_idx").on(table.providerMessageId),
+}));
+
 // ---------- Audit / operational events ----------
 export const auditEvents = sqliteTable("audit_events", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),

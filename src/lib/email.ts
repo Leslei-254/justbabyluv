@@ -40,7 +40,7 @@ export async function sendEmail({ to, subject, text, html }: SendEmailInput) {
       event: "email.provider_unconfigured",
       metadata: { mode: "dev-fallback" },
     });
-    return { ok: true, mode: "dev-fallback" as const };
+    return { ok: true, mode: "dev-fallback" as const, providerMessageId: null };
   }
 
   try {
@@ -59,7 +59,7 @@ export async function sendEmail({ to, subject, text, html }: SendEmailInput) {
       });
       return { ok: false, mode: "resend" as const, error: safeErrorMessage(result.error) };
     }
-    return { ok: true, mode: "resend" as const };
+    return { ok: true, mode: "resend" as const, providerMessageId: result.data?.id ?? null };
   } catch (error) {
     logServerError({
       event: "email.send_exception",

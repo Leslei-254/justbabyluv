@@ -8,6 +8,7 @@ import { auditEvent, AUDIT_EVENT_TYPES, getRequestId } from "@/lib/audit";
 import { buildWelcomeEmail } from "@/lib/email-templates";
 import { sendEmail } from "@/lib/email";
 import { logServerEvent, logServerError } from "@/lib/logger";
+import { queueEmailEvent, completeEmailEvent } from "@/lib/email-events";
 
 const signupSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(100),
@@ -56,11 +57,25 @@ export async function POST(req: Request) {
     });
 
     const welcome = buildWelcomeEmail(user.name);
+    const emailEventId = await queueEmailEvent({
+      userId: user.id,
+      email: user.email,
+      type: "welcome",
+      provider: process.env.RESEND_API_KEY ? "resend" : "dev-fallback",
+    });
+
     const emailResult = await sendEmail({
       to: user.email,
       subject: welcome.subject,
       text: welcome.text,
       html: welcome.html,
+    });
+
+    await completeEmailEvent({
+      id: emailEventId,
+      userId: user.id,
+      ok: emailResult.ok,
+      providerMessageId: emailResult.ok ? emailResult.providerMessageId : null,
     });
 
     if (!emailResult.ok) {

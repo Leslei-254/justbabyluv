@@ -129,8 +129,9 @@ Reminder and welcome emails use the shared email service in
   mark, so production must set it to the public application origin.
 - Welcome emails are sent after successful account creation. Email delivery
   failure does not roll back the newly created account.
-- Persistent email delivery tracking and idempotent welcome-email handling are
-  intentionally reserved for the later email-tracking phases.
+- Email delivery lifecycle is persisted in `email_events` with `queued`, `sent`, and `failed` statuses; provider message IDs are stored when available, without storing full email bodies.
+- Email tracking failures are logged safely and do not block account creation or reminder delivery.
+- Welcome-email idempotency is intentionally reserved for Phase 11.
 
 Each reminder has a "send test email" action (visible when email is
 enabled) that exercises the same provider/fallback path.
