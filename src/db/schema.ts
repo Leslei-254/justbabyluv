@@ -97,10 +97,11 @@ export const emailDeliveries = sqliteTable("email_deliveries", {
   babyId: text("baby_id").references(() => babies.id, { onDelete: "set null" }),
   reminderId: text("reminder_id").references(() => reminders.id, { onDelete: "set null" }),
   emailType: text("email_type", { enum: ["welcome", "reminder"] }).notNull(),
-  status: text("status", { enum: ["pending", "sent", "failed"] }).notNull(),
+  status: text("status", { enum: ["pending", "sent", "delivered", "failed", "bounced"] }).notNull(),
   provider: text("provider").notNull(),
   providerMessageId: text("provider_message_id"),
   failureCode: text("failure_code"),
+  failureMessage: text("failure_message"),
   createdAt: integer("created_at", { mode: "timestamp" }).notNull().default(sql`(unixepoch())`),
   sentAt: integer("sent_at", { mode: "timestamp" }),
 }, (table) => ({
