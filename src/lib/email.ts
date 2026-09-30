@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+import { logServerEvent, logServerError } from "@/lib/logger";
 
 type SendEmailInput = {
   to: string;
@@ -17,13 +18,11 @@ function safeErrorMessage(error: unknown) {
 
 export async function sendEmail({ to, subject, text, html }: SendEmailInput) {
   if (!resendClient) {
-    console.warn(
-      JSON.stringify({
-        severity: "warn",
-        event: "email.provider_unconfigured",
-        metadata: { mode: "dev-fallback" },
-      })
-    );
+    logServerEvent({
+      severity: "warn",
+      event: "email.provider_unconfigured",
+      metadata: { mode: "dev-fallback" },
+    });
     return { ok: true, mode: "dev-fallback" as const };
   }
 
@@ -35,44 +34,21 @@ export async function sendEmail({ to, subject, text, html }: SendEmailInput) {
       text,
       html: html ?? `<p>${text.replace(/\n/g, "<br/>")}</p>`,
     });
-
     if (result.error) {
-      console.error(
-        JSON.stringify({
-          severity: "error",
-          event: "email.send_failed",
-          metadata: { provider: "resend" },
-        })
-      );
+      logServerError({
+        event: "email.send_failed",
+        metadata: { provider: "resend" },
+        error: result.error,
+      });
       return { ok: false, mode: "resend" as const, error: safeErrorMessage(result.error) };
     }
-
     return { ok: true, mode: "resend" as const };
   } catch (error) {
-    console.error(
-      JSON.stringify({
-        severity: "error",
-        event: "email.send_exception",
-        metadata: { provider: "resend" },
-      })
-    );
+    logServerError({
+      event: "email.send_exception",
+      metadata: { provider: "resend" },
+      error,
+    });
     return { ok: false, mode: "resend" as const, error: safeErrorMessage(error) };
   }
-}
-
-export function buildReminderEmail(params: {
-  babyName: string;
-  title: string;
-  when: Date;
-}) {
-  const { babyName, title, when } = params;
-  const time = when.toLocaleString(undefined, {
-    weekday: "short",
-    hour: "numeric",
-    minute: "2-digit",
-  });
-  return {
-    subject: `JustBaby Luv reminder: ${title}`,
-    text: `Hi,\nThis is your reminder for ${babyName}:\n${title} at ${time}.\n\nOpen Baby Care to mark it complete.`,
-  };
 }
