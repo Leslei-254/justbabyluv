@@ -66,6 +66,7 @@ export async function POST(req: Request) {
     }
 
     console.error("[signup] Unexpected error creating user:", err);
+    await auditEvent({ eventType: AUDIT_EVENT_TYPES.ERROR, requestId, metadata: { route: "/api/signup", operation: "create_user" } });
     return NextResponse.json(
       { error: "Something went wrong. Please try again." },
       { status: 500 }
