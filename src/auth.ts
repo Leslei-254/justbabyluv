@@ -41,7 +41,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           !normalizedEmail ||
           normalizedEmail.length > 200 ||
           password.length === 0 ||
-          password.length > 200
+          password.length > 72
         ) {
           await auditEvent({
             eventType: AUDIT_EVENT_TYPES.AUTH_FAILURE,
