@@ -5,7 +5,7 @@ import { milestones } from "@/db/schema";
 import { getAuthedUser } from "@/lib/session";
 import { getOwnedBaby } from "@/lib/data";
 import { milestoneSchema } from "@/lib/validation";
-import { auditEvent, AUDIT_EVENT_TYPES, getRequestId } from "@/lib/audit";
+import { auditEvent, getRequestId } from "@/lib/audit";
 
 export async function GET(req: Request) {
   const user = await getAuthedUser();
