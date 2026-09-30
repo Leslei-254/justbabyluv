@@ -27,9 +27,7 @@ export const users = sqliteTable("users", {
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .default(sql`(unixepoch())`),
-}, (table) => ({
-  babyDatetimeIdx: index("reminders_baby_datetime_idx").on(table.babyId, table.datetime),
-}));
+});
 
 // ---------- Audit / operational events ----------
 export const auditEvents = sqliteTable("audit_events", {
@@ -165,4 +163,6 @@ export const reminders = sqliteTable("reminders", {
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .default(sql`(unixepoch())`),
-});
+});, (table) => ({
+  babyDatetimeIdx: index("reminders_baby_datetime_idx").on(table.babyId, table.datetime),
+})
