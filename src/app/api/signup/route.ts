@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
-import { users } from "@/db/schema";
+import { users, emailEvents } from "@/db/schema";
 import { hashPassword } from "@/lib/password";
 import { auditEvent, AUDIT_EVENT_TYPES, getRequestId } from "@/lib/audit";
 import { buildWelcomeEmail } from "@/lib/email-templates";
@@ -56,12 +56,39 @@ export async function POST(req: Request) {
     });
 
     const welcome = buildWelcomeEmail(user.name);
+    const [emailEvent] = await db
+      .insert(emailEvents)
+      .values({
+        userId: user.id,
+        email: user.email,
+        type: "welcome",
+        provider: process.env.RESEND_API_KEY ? "resend" : "dev-fallback",
+        status: "queued",
+      })
+      .returning({ id: emailEvents.id });
+
     const emailResult = await sendEmail({
       to: user.email,
       subject: welcome.subject,
       text: welcome.text,
       html: welcome.html,
     });
+
+    await db
+      .update(emailEvents)
+      .set(
+        emailResult.ok
+          ? {
+              status: "sent",
+              providerMessageId: emailResult.providerMessageId,
+              sentAt: new Date(),
+            }
+          : {
+              status: "failed",
+              error: "Email delivery failed",
+            }
+      )
+      .where(eq(emailEvents.id, emailEvent.id));
 
     if (!emailResult.ok) {
       logServerError({
