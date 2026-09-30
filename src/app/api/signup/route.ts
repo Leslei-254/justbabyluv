@@ -4,6 +4,7 @@ import { z } from "zod";
 import { db } from "@/db";
 import { users } from "@/db/schema";
 import { hashPassword } from "@/lib/password";
+import { auditEvent, AUDIT_EVENT_TYPES, getRequestId } from "@/lib/audit";
 
 const signupSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(100),
@@ -12,6 +13,7 @@ const signupSchema = z.object({
 });
 
 export async function POST(req: Request) {
+  const requestId = getRequestId(req);
   const body = await req.json().catch(() => null);
   const parsed = signupSchema.safeParse(body);
 
@@ -43,6 +45,7 @@ export async function POST(req: Request) {
       .values({ name, email: normalizedEmail, passwordHash })
       .returning({ id: users.id, name: users.name, email: users.email });
 
+    await auditEvent({ eventType: AUDIT_EVENT_TYPES.ACCOUNT_SIGNUP, userId: user.id, requestId, metadata: { method: "credentials" } });
     return NextResponse.json({ user }, { status: 201 });
   } catch (err) {
     // The pre-check above handles the common case, but the database's unique
