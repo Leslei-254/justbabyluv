@@ -12,7 +12,6 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const requestId = getRequestId(req);
-  const requestId = getRequestId(req);
   const user = await getAuthedUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -53,6 +52,7 @@ export async function DELETE(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const requestId = getRequestId(req);
   const user = await getAuthedUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
