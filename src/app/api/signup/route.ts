@@ -2,12 +2,13 @@ import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
-import { users, emailEvents } from "@/db/schema";
+import { users } from "@/db/schema";
 import { hashPassword } from "@/lib/password";
 import { auditEvent, AUDIT_EVENT_TYPES, getRequestId } from "@/lib/audit";
 import { buildWelcomeEmail } from "@/lib/email-templates";
 import { sendEmail } from "@/lib/email";
 import { logServerEvent, logServerError } from "@/lib/logger";
+import { queueEmailEvent, completeEmailEvent } from "@/lib/email-events";
 
 const signupSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(100),
@@ -56,16 +57,12 @@ export async function POST(req: Request) {
     });
 
     const welcome = buildWelcomeEmail(user.name);
-    const [emailEvent] = await db
-      .insert(emailEvents)
-      .values({
-        userId: user.id,
-        email: user.email,
-        type: "welcome",
-        provider: process.env.RESEND_API_KEY ? "resend" : "dev-fallback",
-        status: "queued",
-      })
-      .returning({ id: emailEvents.id });
+    const emailEventId = await queueEmailEvent({
+      userId: user.id,
+      email: user.email,
+      type: "welcome",
+      provider: process.env.RESEND_API_KEY ? "resend" : "dev-fallback",
+    });
 
     const emailResult = await sendEmail({
       to: user.email,
@@ -74,21 +71,12 @@ export async function POST(req: Request) {
       html: welcome.html,
     });
 
-    await db
-      .update(emailEvents)
-      .set(
-        emailResult.ok
-          ? {
-              status: "sent",
-              providerMessageId: emailResult.providerMessageId,
-              sentAt: new Date(),
-            }
-          : {
-              status: "failed",
-              error: "Email delivery failed",
-            }
-      )
-      .where(eq(emailEvents.id, emailEvent.id));
+    await completeEmailEvent({
+      id: emailEventId,
+      userId: user.id,
+      ok: emailResult.ok,
+      providerMessageId: emailResult.ok ? emailResult.providerMessageId : null,
+    });
 
     if (!emailResult.ok) {
       logServerError({
