@@ -9,21 +9,20 @@ type SendEmailInput = {
 
 const resendApiKey = process.env.RESEND_API_KEY;
 const from = process.env.EMAIL_FROM || "JustBaby Luv <reminders@justbabyluv.com>";
-
 const resendClient = resendApiKey ? new Resend(resendApiKey) : null;
 
-/**
- * Reusable email service.
- *
- * If RESEND_API_KEY is not configured, this safely falls back to logging
- * the email to the console instead of throwing — so the app keeps working
- * in local development without any provider set up.
- */
+function safeErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message.slice(0, 200) : "Email delivery failed";
+}
+
 export async function sendEmail({ to, subject, text, html }: SendEmailInput) {
   if (!resendClient) {
-    console.log(
-      `[email:dev-fallback] No RESEND_API_KEY set. Would send email:\n` +
-        `  To: ${to}\n  Subject: ${subject}\n  Body:\n${text}\n`
+    console.warn(
+      JSON.stringify({
+        severity: "warn",
+        event: "email.provider_unconfigured",
+        metadata: { mode: "dev-fallback" },
+      })
     );
     return { ok: true, mode: "dev-fallback" as const };
   }
@@ -36,14 +35,28 @@ export async function sendEmail({ to, subject, text, html }: SendEmailInput) {
       text,
       html: html ?? `<p>${text.replace(/\n/g, "<br/>")}</p>`,
     });
+
     if (result.error) {
-      console.error("[email:resend] Failed to send:", result.error);
-      return { ok: false, mode: "resend" as const, error: result.error.message };
+      console.error(
+        JSON.stringify({
+          severity: "error",
+          event: "email.send_failed",
+          metadata: { provider: "resend" },
+        })
+      );
+      return { ok: false, mode: "resend" as const, error: safeErrorMessage(result.error) };
     }
+
     return { ok: true, mode: "resend" as const };
-  } catch (err) {
-    console.error("[email:resend] Unexpected error:", err);
-    return { ok: false, mode: "resend" as const, error: String(err) };
+  } catch (error) {
+    console.error(
+      JSON.stringify({
+        severity: "error",
+        event: "email.send_exception",
+        metadata: { provider: "resend" },
+      })
+    );
+    return { ok: false, mode: "resend" as const, error: safeErrorMessage(error) };
   }
 }
 
