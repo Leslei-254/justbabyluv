@@ -67,6 +67,19 @@ export function ErrorText({ children }: { children?: string | null }) {
   );
 }
 
+export function Skeleton({
+  className,
+  ...props
+}: HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div
+      aria-hidden="true"
+      className={cn("animate-pulse rounded-xl bg-cream", className)}
+      {...props}
+    />
+  );
+}
+
 export function EmptyState({
   title,
   description,
