@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/Button";
@@ -30,13 +30,16 @@ export function OnboardingFlow({ firstName }: { firstName?: string | null }) {
   const stepIndex = steps.indexOf(step);
   const progress = Math.round(((stepIndex + 1) / steps.length) * 100);
 
-  const defaultReminderDate = useMemo(() => {
-    const date = new Date(Date.now() + 60 * 60 * 1000);
+  const [defaultReminderDate] = useState(() => {
+    const date = new Date();
+    date.setHours(date.getHours() + 1);
     date.setSeconds(0, 0);
+
     const offset = date.getTimezoneOffset();
     const local = new Date(date.getTime() - offset * 60 * 1000);
+
     return local.toISOString().slice(0, 16);
-  }, []);
+  });
 
   async function saveBaby(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
