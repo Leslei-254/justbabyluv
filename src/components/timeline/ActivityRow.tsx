@@ -19,6 +19,7 @@ type Activity = Pick<
   | "unit"
   | "side"
   | "medicationName"
+  | "dose"
   | "startTime"
   | "endTime"
   | "notes"
