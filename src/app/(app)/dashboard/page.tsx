@@ -51,6 +51,7 @@ export default async function DashboardPage() {
         unit: true,
         side: true,
         medicationName: true,
+        dose: true,
         notes: true,
       },
       orderBy: [desc(activities.startTime)],
