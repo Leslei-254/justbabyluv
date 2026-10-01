@@ -6,13 +6,26 @@ const LOGIN_WINDOW_MS = 15 * 60 * 1000;
 const SIGNUP_LIMIT = 5;
 const SIGNUP_WINDOW_MS = 60 * 60 * 1000;
 
+function isSameOrigin(req: NextRequest): boolean {
+  const origin = req.headers.get("origin");
+  if (!origin) return true;
+  return origin === req.nextUrl.origin;
+}
+
 export function proxy(req: NextRequest) {
+  const path = req.nextUrl.pathname;
+
+  if (req.method !== "GET" && req.method !== "HEAD" && req.method !== "OPTIONS") {
+    if (!isSameOrigin(req)) {
+      return NextResponse.json({ error: "Invalid request origin." }, { status: 403 });
+    }
+  }
+
   if (req.method !== "POST") {
     return NextResponse.next();
   }
 
   const address = getClientAddress(req);
-  const path = req.nextUrl.pathname;
 
   const rule =
     path === "/api/signup"
@@ -47,5 +60,5 @@ export function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/api/signup", "/api/auth/callback/credentials"],
+  matcher: ["/api/:path*"],
 };
