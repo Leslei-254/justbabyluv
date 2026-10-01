@@ -11,9 +11,10 @@ import type { InferSelectModel } from "drizzle-orm";
 
 type Reminder = InferSelectModel<typeof reminders>;
 
-function toLocalInputValue(date: Date) {
-  const tzOffset = date.getTimezoneOffset() * 60000;
-  return new Date(date.getTime() - tzOffset).toISOString().slice(0, 16);
+function toLocalInputValue(date: Date, timeZone: string) {
+  const parts = new Intl.DateTimeFormat("en-CA", { timeZone, year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(date);
+  const get = (type: string) => parts.find((part) => part.type === type)?.value ?? "";
+  return `${get("year")}-${get("month")}-${get("day")}T${get("hour")}:${get("minute")}`;
 }
 
 export function ReminderSheet({
@@ -26,6 +27,7 @@ export function ReminderSheet({
   onClose: () => void;
   babyId: string;
   reminder?: Reminder | null;
+  timezone: string;
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -41,7 +43,7 @@ export function ReminderSheet({
       babyId,
       title: String(form.get("title") || ""),
       type: String(form.get("type") || "CUSTOM"),
-      datetime: new Date(String(form.get("datetime") || "")).toISOString(),
+      datetime: String(form.get("datetime") || ""),
       repeat: String(form.get("repeat") || "none"),
       emailEnabled: form.get("emailEnabled") === "on",
       notes: String(form.get("notes") || "") || null,

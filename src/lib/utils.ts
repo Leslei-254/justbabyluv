@@ -6,7 +6,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /** Friendly baby age, e.g. "12 days old" or "2 months, 1 week" */
-export function formatBabyAge(dob: Date): string {
+export function formatBabyAge(dob: Date, timeZone?: string): string {
   const now = new Date();
   const diffMs = now.getTime() - dob.getTime();
   const days = Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
@@ -23,10 +23,13 @@ export function formatBabyAge(dob: Date): string {
     return out + " old";
   }
 
+  const nowParts = timeZone ? getCalendarParts(now, timeZone) : { year: now.getFullYear(), month: now.getMonth() + 1, day: now.getDate() };
+  const dobParts = timeZone ? getCalendarParts(dob, timeZone) : { year: dob.getFullYear(), month: dob.getMonth() + 1, day: dob.getDate() };
   const months =
-    (now.getFullYear() - dob.getFullYear()) * 12 +
-    (now.getMonth() - dob.getMonth()) -
-    (now.getDate() < dob.getDate() ? 1 : 0);
+    (nowParts.year - dobParts.year) * 12 +
+    (nowParts.month - dobParts.month) -
+    (nowParts.day < dobParts.day ? 1 : 0);
+
   const anchor = new Date(dob);
   anchor.setMonth(anchor.getMonth() + months);
   const remDays = Math.floor(
@@ -70,40 +73,125 @@ export function formatDuration(ms: number): string {
   return `${h}h ${m}m`;
 }
 
-export function formatClockTime(date: Date): string {
-  return date.toLocaleTimeString(undefined, {
-    hour: "numeric",
-    minute: "2-digit",
-  });
+type CalendarParts = { year: number; month: number; day: number };
+
+export function getCalendarParts(date: Date, timeZone: string): CalendarParts {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(date);
+  const get = (type: string) => Number(parts.find((p) => p.type === type)?.value);
+  return { year: get("year"), month: get("month"), day: get("day") };
 }
 
-export function formatDayLabel(date: Date): string {
-  const today = new Date();
-  const yesterday = new Date();
-  yesterday.setDate(today.getDate() - 1);
+export function getTimeZoneDateKey(date: Date, timeZone: string): string {
+  const p = getCalendarParts(date, timeZone);
+  return `${p.year}-${String(p.month).padStart(2, "0")}-${String(p.day).padStart(2, "0")}`;
+}
 
-  const isSameDay = (a: Date, b: Date) =>
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate();
+export function formatClockTime(date: Date, timeZone = "UTC"): string {
+  return new Intl.DateTimeFormat(undefined, {
+    timeZone,
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(date);
+}
 
-  if (isSameDay(date, today)) return "Today";
-  if (isSameDay(date, yesterday)) return "Yesterday";
-  return date.toLocaleDateString(undefined, {
+export function formatDayLabel(date: Date, timeZone = "UTC"): string {
+  const todayKey = getTimeZoneDateKey(new Date(), timeZone);
+  const dateKey = getTimeZoneDateKey(date, timeZone);
+  if (dateKey === todayKey) return "Today";
+
+  const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  if (dateKey === getTimeZoneDateKey(yesterday, timeZone)) return "Yesterday";
+
+  return new Intl.DateTimeFormat(undefined, {
+    timeZone,
     weekday: "long",
     month: "short",
     day: "numeric",
-  });
+  }).format(date);
 }
 
-export function startOfDay(date: Date): Date {
-  const d = new Date(date);
-  d.setHours(0, 0, 0, 0);
-  return d;
+/**
+ * Convert a datetime-local wall-clock value into an absolute instant in an
+ * IANA timezone. This keeps DB timestamps timezone-neutral while interpreting
+ * user-entered reminder times in the user's saved timezone.
+ */
+export function zonedDateTimeToUtc(value: string, timeZone: string): Date {
+  const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?$/.exec(value);
+  if (!match) throw new Error("Invalid local date/time");
+
+  const [, year, month, day, hour, minute, second = "00"] = match;
+  let candidate = Date.UTC(
+    Number(year),
+    Number(month) - 1,
+    Number(day),
+    Number(hour),
+    Number(minute),
+    Number(second)
+  );
+
+  for (let i = 0; i < 3; i += 1) {
+    const p = new Intl.DateTimeFormat("en-US", {
+      timeZone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hourCycle: "h23",
+    }).formatToParts(new Date(candidate));
+    const get = (type: string) => Number(p.find((part) => part.type === type)?.value);
+    const asUtc = Date.UTC(get("year"), get("month") - 1, get("day"), get("hour"), get("minute"), get("second"));
+    const offset = asUtc - candidate;
+    const next = Date.UTC(
+      Number(year),
+      Number(month) - 1,
+      Number(day),
+      Number(hour),
+      Number(minute),
+      Number(second)
+    ) - offset;
+    if (next === candidate) break;
+    candidate = next;
+  }
+
+  const result = new Date(candidate);
+  const check = new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hourCycle: "h23",
+  }).format(result).replace(", ", "T");
+  const normalized = `${year}-${month}-${day}T${hour}:${minute}:${second}`;
+  if (check !== normalized) throw new Error("That local time does not exist in the selected timezone.");
+  return result;
 }
 
-export function endOfDay(date: Date): Date {
-  const d = new Date(date);
-  d.setHours(23, 59, 59, 999);
-  return d;
+export function startOfDay(date: Date, timeZone?: string): Date {
+  if (!timeZone) {
+    const d = new Date(date);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }
+  const key = getTimeZoneDateKey(date, timeZone);
+  return zonedDateTimeToUtc(`${key}T00:00:00`, timeZone);
+}
+
+export function endOfDay(date: Date, timeZone?: string): Date {
+  if (!timeZone) {
+    const d = new Date(date);
+    d.setHours(23, 59, 59, 999);
+    return d;
+  }
+  const key = getTimeZoneDateKey(date, timeZone);
+  return new Date(zonedDateTimeToUtc(`${key}T00:00:00`, timeZone).getTime() + 24 * 60 * 60 * 1000 - 1);
 }

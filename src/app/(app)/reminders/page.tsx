@@ -15,5 +15,5 @@ export default async function RemindersPage() {
     orderBy: (r, { asc }) => [asc(r.datetime)],
   });
 
-  return <RemindersView babyId={baby.id} babyName={baby.name} reminders={list} />;
+  return <RemindersView babyId={baby.id} babyName={baby.name} reminders={list} timezone={user.timezone} />;
 }

@@ -6,6 +6,7 @@ import { getAuthedUser } from "@/lib/session";
 import { getOwnedBaby } from "@/lib/data";
 import { reminderSchema } from "@/lib/validation";
 import { auditEvent, AUDIT_EVENT_TYPES, getRequestId } from "@/lib/audit";
+import { zonedDateTimeToUtc } from "@/lib/utils";
 
 export async function GET(req: Request) {
   const user = await getAuthedUser();
@@ -46,9 +47,16 @@ export async function POST(req: Request) {
     );
   }
 
+  let datetime: Date;
+  try {
+    datetime = zonedDateTimeToUtc(String(body?.datetime ?? ""), user.timezone);
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Invalid reminder date/time" }, { status: 400 });
+  }
+
   const [reminder] = await db
     .insert(reminders)
-    .values({ ...parsed.data, babyId })
+    .values({ ...parsed.data, datetime, babyId })
     .returning();
 
   await auditEvent({ eventType: AUDIT_EVENT_TYPES.REMINDER_CREATE, userId: user.id, babyId, entityType: "reminder", entityId: reminder.id, requestId, metadata: { reminderType: reminder.type, emailEnabled: reminder.emailEnabled } });

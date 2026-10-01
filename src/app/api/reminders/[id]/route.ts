@@ -6,6 +6,7 @@ import { getAuthedUser } from "@/lib/session";
 import { getOwnedReminder } from "@/lib/data";
 import { reminderUpdateSchema } from "@/lib/validation";
 import { auditEvent, AUDIT_EVENT_TYPES, getRequestId } from "@/lib/audit";
+import { zonedDateTimeToUtc } from "@/lib/utils";
 
 export async function PATCH(
   req: Request,
@@ -28,9 +29,18 @@ export async function PATCH(
     );
   }
 
+  const updateData = { ...parsed.data };
+  if (typeof body?.datetime === "string" && !body.datetime.endsWith("Z")) {
+    try {
+      updateData.datetime = zonedDateTimeToUtc(body.datetime, user.timezone);
+    } catch (error) {
+      return NextResponse.json({ error: error instanceof Error ? error.message : "Invalid reminder date/time" }, { status: 400 });
+    }
+  }
+
   const [updated] = await db
     .update(reminders)
-    .set(parsed.data)
+    .set(updateData)
     .where(eq(reminders.id, id))
     .returning();
 
