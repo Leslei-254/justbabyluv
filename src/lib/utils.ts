@@ -192,6 +192,11 @@ export function endOfDay(date: Date, timeZone?: string): Date {
     d.setHours(23, 59, 59, 999);
     return d;
   }
+
   const key = getTimeZoneDateKey(date, timeZone);
-  return new Date(zonedDateTimeToUtc(`${key}T00:00:00`, timeZone).getTime() + 24 * 60 * 60 * 1000 - 1);
+  const start = zonedDateTimeToUtc(`${key}T00:00:00`, timeZone);
+  const nextDay = new Date(start.getTime() + 36 * 60 * 60 * 1000);
+  const nextKey = getTimeZoneDateKey(nextDay, timeZone);
+  const nextStart = zonedDateTimeToUtc(`${nextKey}T00:00:00`, timeZone);
+  return new Date(nextStart.getTime() - 1);
 }
