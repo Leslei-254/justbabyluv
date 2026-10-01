@@ -3,6 +3,7 @@ import { db } from "@/db";
 import { babies } from "@/db/schema";
 import { getAuthedUser } from "@/lib/session";
 import { getUserBabies } from "@/lib/data";
+import { auditEvent, AUDIT_EVENT_TYPES, getRequestId } from "@/lib/audit";
 import { babySchema } from "@/lib/validation";
 
 export async function GET() {
@@ -14,6 +15,7 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+  const requestId = getRequestId(req);
   const user = await getAuthedUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -49,6 +51,16 @@ export async function POST(req: Request) {
       notes: notes || null,
     })
     .returning();
+
+  await auditEvent({
+    eventType: AUDIT_EVENT_TYPES.BABY_CREATE,
+    userId: user.id,
+    babyId: baby.id,
+    entityType: "baby",
+    entityId: baby.id,
+    requestId,
+    metadata: {},
+  });
 
   return NextResponse.json({ baby }, { status: 201 });
 }
