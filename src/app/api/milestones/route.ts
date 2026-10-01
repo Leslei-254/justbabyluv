@@ -21,6 +21,7 @@ export async function GET(req: Request) {
   const list = await db.query.milestones.findMany({
     where: eq(milestones.babyId, babyId),
     orderBy: [desc(milestones.date)],
+    limit: 200,
   });
 
   return NextResponse.json({ milestones: list });
