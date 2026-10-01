@@ -66,7 +66,7 @@ export function ActivityRow({
   return (
     <div className="flex items-center gap-3 py-3 border-b border-border last:border-0 group">
       <div className="w-9 h-9 rounded-full bg-rose-soft flex items-center justify-center text-rose-strong shrink-0">
-        <Icon size={16} />
+        <Icon size={16} aria-hidden="true" />
       </div>
       <div className="min-w-0 flex-1">
         <p className="text-sm font-medium text-ink truncate">{headline}</p>
@@ -79,20 +79,22 @@ export function ActivityRow({
       <div className="flex sm:opacity-0 sm:group-hover:opacity-100 sm:focus-within:opacity-100 items-center gap-1 shrink-0">
         {onEdit && (
           <button
-            aria-label="Edit"
+            type="button"
+            aria-label="Edit activity"
             onClick={() => onEdit(activity)}
-            className="w-10 h-10 rounded-full flex items-center justify-center text-ink-soft hover:bg-cream"
+            className="w-11 h-11 rounded-full flex items-center justify-center text-ink-soft hover:bg-cream"
           >
-            <Pencil size={14} />
+            <Pencil size={14} aria-hidden="true" />
           </button>
         )}
         <button
-          aria-label="Delete"
+          type="button"
+          aria-label="Delete activity"
           onClick={() => setConfirmOpen(true)}
           disabled={deleting}
-          className="w-10 h-10 rounded-full flex items-center justify-center text-danger hover:bg-danger-soft"
+          className="w-11 h-11 rounded-full flex items-center justify-center text-danger hover:bg-danger-soft"
         >
-          <Trash2 size={14} />
+          <Trash2 size={14} aria-hidden="true" />
         </button>
       </div>
 
