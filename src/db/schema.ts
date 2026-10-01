@@ -17,6 +17,7 @@ export const users = sqliteTable("users", {
   emailRemindersEnabled: integer("email_reminders_enabled", { mode: "boolean" }).notNull().default(true),
   unitPreference: text("unit_preference", { enum: ["oz", "ml"] }).notNull().default("oz"),
   theme: text("theme", { enum: ["light", "dark", "system"] }).notNull().default("system"),
+  timezone: text("timezone").notNull().default("UTC"),
   createdAt: integer("created_at", { mode: "timestamp" }).notNull().default(sql`(unixepoch())`),
 });
 
