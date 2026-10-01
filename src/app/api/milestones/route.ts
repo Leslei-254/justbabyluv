@@ -5,7 +5,7 @@ import { milestones } from "@/db/schema";
 import { getAuthedUser } from "@/lib/session";
 import { getOwnedBaby } from "@/lib/data";
 import { milestoneSchema } from "@/lib/validation";
-import { auditEvent, getRequestId } from "@/lib/audit";
+import { auditEvent, AUDIT_EVENT_TYPES, getRequestId } from "@/lib/audit";
 
 export async function GET(req: Request) {
   const user = await getAuthedUser();
@@ -51,6 +51,6 @@ export async function POST(req: Request) {
     .values({ ...parsed.data, babyId })
     .returning();
 
-  await auditEvent({ eventType: "milestone.create", userId: user.id, babyId, entityType: "milestone", entityId: milestone.id, requestId, metadata: {} });
+  await auditEvent({ eventType: AUDIT_EVENT_TYPES.MILESTONE_CREATE, userId: user.id, babyId, entityType: "milestone", entityId: milestone.id, requestId, metadata: {} });
   return NextResponse.json({ milestone }, { status: 201 });
 }
