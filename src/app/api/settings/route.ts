@@ -5,13 +5,14 @@ import { db } from "@/db";
 import { users } from "@/db/schema";
 import { getAuthedUser } from "@/lib/session";
 import { auditEvent, AUDIT_EVENT_TYPES, getRequestId } from "@/lib/audit";
+import { isValidTimeZone } from "@/lib/utils";
 
 const settingsSchema = z.object({
   unitPreference: z.enum(["oz", "ml"]).optional(),
   theme: z.enum(["light", "dark", "system"]).optional(),
   emailRemindersEnabled: z.boolean().optional(),
   name: z.string().trim().min(1).max(100).optional(),
-  timezone: z.string().trim().min(1).max(100).optional(),
+  timezone: z.string().trim().min(1).max(100).refine(isValidTimeZone, "A valid IANA timezone is required").optional(),
 });
 
 export async function PATCH(req: Request) {
