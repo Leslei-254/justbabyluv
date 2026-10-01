@@ -22,6 +22,7 @@ export async function GET(req: Request) {
   const list = await db.query.reminders.findMany({
     where: eq(reminders.babyId, babyId),
     orderBy: [asc(reminders.datetime)],
+    limit: 200,
   });
 
   return NextResponse.json({ reminders: list });
