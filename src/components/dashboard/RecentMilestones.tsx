@@ -2,10 +2,12 @@ import Link from "next/link";
 import { Sparkles } from "lucide-react";
 import { Card, EmptyState } from "@/components/ui/primitives";
 import { formatDayLabel } from "@/lib/utils";
-import type { milestones } from "@/db/schema";
-import type { InferSelectModel } from "drizzle-orm";
 
-type Milestone = InferSelectModel<typeof milestones>;
+type Milestone = {
+  id: string;
+  title: string;
+  date: Date;
+};
 
 export function RecentMilestones({ milestones }: { milestones: Milestone[] }) {
   return (
