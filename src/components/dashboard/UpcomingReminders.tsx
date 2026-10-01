@@ -2,10 +2,12 @@ import Link from "next/link";
 import { Bell, AlertCircle } from "lucide-react";
 import { Card, EmptyState } from "@/components/ui/primitives";
 import { formatClockTime, formatDayLabel } from "@/lib/utils";
-import type { reminders } from "@/db/schema";
-import type { InferSelectModel } from "drizzle-orm";
 
-type Reminder = InferSelectModel<typeof reminders>;
+type Reminder = {
+  id: string;
+  title: string;
+  datetime: Date;
+};
 
 export function UpcomingReminders({
   overdue,
