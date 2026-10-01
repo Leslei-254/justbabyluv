@@ -4,6 +4,7 @@ import { z } from "zod";
 import { db } from "@/db";
 import { users } from "@/db/schema";
 import { getAuthedUser } from "@/lib/session";
+import { auditEvent, AUDIT_EVENT_TYPES, getRequestId } from "@/lib/audit";
 
 const settingsSchema = z.object({
   unitPreference: z.enum(["oz", "ml"]).optional(),
@@ -13,6 +14,7 @@ const settingsSchema = z.object({
 });
 
 export async function PATCH(req: Request) {
+  const requestId = getRequestId(req);
   const user = await getAuthedUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -37,6 +39,15 @@ export async function PATCH(req: Request) {
       theme: users.theme,
       emailRemindersEnabled: users.emailRemindersEnabled,
     });
+
+  await auditEvent({
+    eventType: AUDIT_EVENT_TYPES.SETTINGS_UPDATE,
+    userId: user.id,
+    entityType: "user",
+    entityId: user.id,
+    requestId,
+    metadata: { fields: Object.keys(parsed.data).join(",") },
+  });
 
   return NextResponse.json({ user: updated });
 }
