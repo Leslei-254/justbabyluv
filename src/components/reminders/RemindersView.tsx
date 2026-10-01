@@ -18,10 +18,12 @@ export function RemindersView({
   babyId,
   babyName,
   reminders,
+  timezone,
 }: {
   babyId: string;
   babyName: string;
   reminders: Reminder[];
+  timezone: string;
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -156,7 +158,7 @@ export function RemindersView({
                   <div className="min-w-0 flex-1 basis-40">
                     <p className="text-sm font-medium text-ink truncate">{r.title}</p>
                     <p className="text-xs text-ink-soft">
-                      {formatDayLabel(r.datetime)} · {formatClockTime(r.datetime)}
+                      {formatDayLabel(r.datetime, timezone)} · {formatClockTime(r.datetime, timezone)}
                       {r.repeat !== "none" ? ` · repeats ${r.repeat}` : ""}
                       {r.emailEnabled ? " · email on" : ""}
                     </p>
@@ -247,6 +249,7 @@ export function RemindersView({
         }}
         babyId={babyId}
         reminder={editing}
+        timezone={timezone}
       />
 
       <ConfirmDialog
