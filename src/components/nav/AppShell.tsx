@@ -9,8 +9,8 @@ import { Logo } from "@/components/brand/Logo";
 const navItems = [
   { href: "/dashboard", label: "Home", icon: Home },
   { href: "/timeline", label: "Timeline", icon: ListTree },
-  { href: "/baby-steps", label: "Baby Steps", icon: Sparkles },
   { href: "/reminders", label: "Reminders", icon: Bell },
+  { href: "/baby-steps", label: "Baby Steps", icon: Sparkles },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
