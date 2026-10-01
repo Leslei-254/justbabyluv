@@ -4,6 +4,7 @@ import {
   endOfDay,
   formatClockTime,
   getTimeZoneDateKey,
+  isValidTimeZone,
   startOfDay,
   zonedDateTimeToUtc,
 } from "../src/lib/utils";
@@ -21,6 +22,12 @@ test("timezone conversion preserves the user's wall-clock time", () => {
     assert.equal(formatClockTime(date, timeZone), "6:30 PM");
     assert.equal(getTimeZoneDateKey(date, timeZone), "2026-10-01");
   }
+});
+
+test("timezone validation accepts IANA zones and rejects invalid values", () => {
+  assert.equal(isValidTimeZone("Africa/Nairobi"), true);
+  assert.equal(isValidTimeZone("America/New_York"), true);
+  assert.equal(isValidTimeZone("Not/A-Timezone"), false);
 });
 
 test("timezone conversion rejects nonexistent DST local times", () => {
