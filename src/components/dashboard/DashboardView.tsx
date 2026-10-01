@@ -21,8 +21,11 @@ import type { InferSelectModel } from "drizzle-orm";
 
 type Activity = InferSelectModel<typeof activities>;
 type Baby = InferSelectModel<typeof babies>;
-type Reminder = InferSelectModel<typeof reminders>;
-type Milestone = InferSelectModel<typeof milestones>;
+type ActiveTimer = Pick<Activity, "id" | "type" | "startTime">;
+type BufferActivity = Pick<Activity, "id" | "type" | "startTime" | "endTime">;
+type DashboardReminder = Pick<Reminder, "id" | "title" | "datetime">;
+type DashboardMilestone = Pick<Milestone, "id" | "title" | "date">;
+type BufferMilestone = Pick<Milestone, "id" | "date">;
 
 const NETWORK_ERROR_MESSAGE = "Couldn't reach the server. Check your connection and try again.";
 
@@ -37,13 +40,13 @@ export function DashboardView({
   recentMilestones,
 }: {
   baby: Baby;
-  activeTimers: Activity[];
-  bufferActivities: Activity[];
+  activeTimers: ActiveTimer[];
+  bufferActivities: BufferActivity[];
   recentActivities: Activity[];
-  overdueReminders: Reminder[];
-  upcomingReminders: Reminder[];
-  bufferMilestones: Milestone[];
-  recentMilestones: Milestone[];
+  overdueReminders: DashboardReminder[];
+  upcomingReminders: DashboardReminder[];
+  bufferMilestones: BufferMilestone[];
+  recentMilestones: DashboardMilestone[];
 }) {
   const router = useRouter();
   const [sheetType, setSheetType] = useState<
