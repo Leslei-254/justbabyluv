@@ -4,15 +4,33 @@ import { AuthProvider } from "@/components/providers/AuthProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://justbabyluv.vercel.app"),
   title: "JustBaby Luv Baby Care",
   description: "Keep track of the little things that matter.",
+  applicationName: "JustBaby Luv",
+  manifest: "/manifest.webmanifest",
   icons: {
     icon: "/brand/mark.svg",
     apple: "/brand/mark.svg",
   },
+  openGraph: {
+    title: "JustBaby Luv Baby Care",
+    description: "A calm, simple place to track baby care, reminders, and milestones.",
+    url: "https://justbabyluv.vercel.app",
+    siteName: "JustBaby Luv",
+    type: "website",
+  },
+  appleWebApp: {
+    capable: true,
+    title: "JustBaby Luv",
+    statusBarStyle: "default",
+  },
 };
 
 export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#FBF6F2" },
     { media: "(prefers-color-scheme: dark)", color: "#201A18" },
