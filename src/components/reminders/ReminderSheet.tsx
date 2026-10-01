@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Sheet } from "@/components/ui/Sheet";
 import { Button } from "@/components/ui/Button";
-import { zonedDateTimeToUtc } from "@/lib/utils";
 import { Field, Input, Select, Textarea, ErrorText } from "@/components/ui/primitives";
 import type { reminders } from "@/db/schema";
 import type { InferSelectModel } from "drizzle-orm";
