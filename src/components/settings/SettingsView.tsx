@@ -17,6 +17,9 @@ export function SettingsView({ user, baby }: { user: User; baby: Baby }) {
   const router = useRouter();
   const [savingPrefs, setSavingPrefs] = useState(false);
   const [resetting, setResetting] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState("");
+  const [privacyOpen, setPrivacyOpen] = useState(false);
 
   async function updatePref(key: string, value: string | boolean) {
     setSavingPrefs(true);
@@ -76,6 +79,32 @@ export function SettingsView({ user, baby }: { user: User; baby: Baby }) {
     }
     toast.success("All activity data cleared");
     router.refresh();
+  }
+
+  async function deleteAccount() {
+    if (deleteConfirmation !== "DELETE") return;
+
+    setDeletingAccount(true);
+
+    try {
+      const res = await fetch("/api/account", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ confirmation: "DELETE" }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        toast.error(data?.error ?? "We couldn't delete your account.");
+        setDeletingAccount(false);
+        return;
+      }
+
+      await signOut({ callbackUrl: "/login" });
+    } catch {
+      setDeletingAccount(false);
+      toast.error("We couldn't delete your account. Please try again.");
+    }
   }
 
   return (
@@ -159,6 +188,76 @@ export function SettingsView({ user, baby }: { user: User; baby: Baby }) {
           </Button>
           <Button variant="danger" onClick={clearAllData} disabled={resetting}>
             Clear all data
+          </Button>
+        </div>
+      </Card>
+
+      <Card>
+        <h2 className="font-display text-lg text-ink mb-2">Privacy</h2>
+        <p className="text-sm text-ink-soft">
+          JustBaby Luv stores your account details and baby-care records so you can
+          use the app and receive optional reminders. Baby-care activity is not used
+          for advertising, and your records are not intentionally exposed to other users.
+        </p>
+        <button
+          type="button"
+          className="mt-3 min-h-11 text-sm font-medium text-ink underline underline-offset-4"
+          aria-expanded={privacyOpen}
+          onClick={() => setPrivacyOpen((open) => !open)}
+        >
+          {privacyOpen ? "Hide privacy details" : "View privacy details"}
+        </button>
+        {privacyOpen && (
+          <div className="mt-3 rounded-xl border border-border bg-surface-soft p-4 text-sm text-ink-soft space-y-2">
+            <p>
+              We collect only the information needed to provide your account,
+              baby profile, activity tracking, reminders and related app features.
+            </p>
+            <p>
+              Optional email reminders use your account email address for delivery.
+              Delivery records are removed when you delete your account.
+            </p>
+            <p>
+              Demo data belongs only to the baby profile in your account and can be
+              cleared from this page.
+            </p>
+            <p>
+              You can permanently delete your account and its baby-care records below.
+            </p>
+          </div>
+        )}
+      </Card>
+
+      <Card>
+        <h2 className="font-display text-lg text-ink mb-1">Delete account</h2>
+        <p className="text-sm text-ink-soft">
+          Permanently delete your account, baby profile, activities, milestones,
+          reminders and email delivery records. This cannot be undone.
+        </p>
+
+        <div className="mt-4 rounded-xl border border-border p-4 space-y-3">
+          <label htmlFor="delete-account-confirmation" className="block text-sm font-medium text-ink">
+            Type <span className="font-mono">DELETE</span> to confirm
+          </label>
+          <input
+            id="delete-account-confirmation"
+            value={deleteConfirmation}
+            onChange={(e) => setDeleteConfirmation(e.target.value)}
+            disabled={deletingAccount}
+            autoComplete="off"
+            spellCheck={false}
+            className="min-h-11 w-full rounded-xl border border-border bg-surface px-3 text-sm text-ink outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+            aria-describedby="delete-account-warning"
+          />
+          <p id="delete-account-warning" className="text-xs text-ink-faint">
+            This permanently removes your account and personal baby-care records.
+          </p>
+          <Button
+            variant="danger"
+            onClick={deleteAccount}
+            disabled={deletingAccount || deleteConfirmation !== "DELETE"}
+          >
+            {deletingAccount ? "Deleting account…" : "Delete my account"}
           </Button>
         </div>
       </Card>
