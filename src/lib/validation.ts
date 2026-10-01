@@ -32,6 +32,18 @@ export const activitySchema = activityBaseSchema.refine(
 
 export const activityUpdateSchema = activityBaseSchema.partial();
 
+export const activityQuerySchema = z.object({
+  babyId: z.string().trim().min(1).max(100),
+  type: z.enum(["FEED", "DIAPER", "SLEEP", "PUMP", "MEDICATION"]).optional(),
+  from: z.coerce.date().optional(),
+  to: z.coerce.date().optional(),
+  active: z.enum(["true", "false"]).optional(),
+  limit: z.coerce.number().int().min(1).max(500).default(200),
+}).refine(
+  (data) => !data.from || !data.to || data.from.getTime() <= data.to.getTime(),
+  { message: "The start date must be before the end date", path: ["to"] }
+);
+
 export const milestoneSchema = z.object({
   title: z.string().trim().min(1, "Title is required").max(150),
   date: z.coerce.date(),
