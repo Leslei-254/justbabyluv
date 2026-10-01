@@ -40,7 +40,6 @@ export function LogActivitySheet({
   onClose: () => void;
   babyId?: string;
   type: ActivityType;
-  /** When provided, the sheet edits this existing activity instead of creating a new one. */
   activity?: Activity;
 }) {
   const router = useRouter();
@@ -54,7 +53,6 @@ export function LogActivitySheet({
     setError(null);
     setLoading(true);
     const form = new FormData(e.currentTarget);
-
     const startTime = String(form.get("startTime") || "");
     const endTimeRaw = String(form.get("endTime") || "");
 
@@ -123,8 +121,8 @@ export function LogActivitySheet({
     <Sheet open={open} onClose={onClose} title={sheetTitle}>
       <form onSubmit={onSubmit} className="space-y-4" noValidate>
         {type === "DIAPER" && (
-          <div>
-            <Field>Type</Field>
+          <fieldset>
+            <legend className="block text-sm font-medium text-ink mb-1.5">Type</legend>
             <div className="grid grid-cols-3 gap-2">
               {[
                 { value: "wet", label: "Wet" },
@@ -146,7 +144,7 @@ export function LogActivitySheet({
                 </label>
               ))}
             </div>
-          </div>
+          </fieldset>
         )}
 
         {type === "FEED" && (
@@ -163,14 +161,7 @@ export function LogActivitySheet({
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Field htmlFor="amount">Amount</Field>
-                <Input
-                  id="amount"
-                  name="amount"
-                  type="number"
-                  step="0.1"
-                  min="0"
-                  defaultValue={activity?.amount ?? ""}
-                />
+                <Input id="amount" name="amount" type="number" step="0.1" min="0" defaultValue={activity?.amount ?? ""} />
               </div>
               <div>
                 <Field htmlFor="unit">Unit</Field>
@@ -205,14 +196,7 @@ export function LogActivitySheet({
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Field htmlFor="amount">Amount</Field>
-                <Input
-                  id="amount"
-                  name="amount"
-                  type="number"
-                  step="0.1"
-                  min="0"
-                  defaultValue={activity?.amount ?? ""}
-                />
+                <Input id="amount" name="amount" type="number" step="0.1" min="0" defaultValue={activity?.amount ?? ""} />
               </div>
               <div>
                 <Field htmlFor="unit">Unit</Field>
@@ -229,21 +213,11 @@ export function LogActivitySheet({
           <>
             <div>
               <Field htmlFor="medicationName">Medication name</Field>
-              <Input
-                id="medicationName"
-                name="medicationName"
-                required
-                defaultValue={activity?.medicationName ?? ""}
-              />
+              <Input id="medicationName" name="medicationName" required defaultValue={activity?.medicationName ?? ""} />
             </div>
             <div>
               <Field htmlFor="dose">Dose</Field>
-              <Input
-                id="dose"
-                name="dose"
-                placeholder="e.g. 2.5 mL"
-                defaultValue={activity?.dose ?? ""}
-              />
+              <Input id="dose" name="dose" placeholder="e.g. 2.5 mL" defaultValue={activity?.dose ?? ""} />
             </div>
           </>
         )}
@@ -251,13 +225,7 @@ export function LogActivitySheet({
         <div className="grid grid-cols-2 gap-3">
           <div>
             <Field htmlFor="startTime">Start time</Field>
-            <Input
-              id="startTime"
-              name="startTime"
-              type="datetime-local"
-              defaultValue={toLocalInputValue(activity?.startTime ?? now)}
-              required
-            />
+            <Input id="startTime" name="startTime" type="datetime-local" defaultValue={toLocalInputValue(activity?.startTime ?? now)} required />
           </div>
           <div>
             <Field htmlFor="endTime">
