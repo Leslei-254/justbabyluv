@@ -33,13 +33,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               href={item.href}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
+                "flex min-h-11 items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
                 active
                   ? "bg-rose-soft text-rose-strong"
                   : "text-ink-soft hover:bg-cream hover:text-ink"
               )}
             >
-              <Icon size={18} />
+              <Icon size={18} aria-hidden="true" />
               {item.label}
             </Link>
           );
@@ -67,7 +67,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               )}
               aria-current={active ? "page" : undefined}
             >
-              <Icon size={20} />
+              <Icon size={20} aria-hidden="true" />
               {item.label}
             </Link>
           );
