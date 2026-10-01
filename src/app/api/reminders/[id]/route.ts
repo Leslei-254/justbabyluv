@@ -30,7 +30,7 @@ export async function PATCH(
   }
 
   const updateData = { ...parsed.data };
-  if (typeof body?.datetime === "string") {
+  if (typeof body?.datetime === "string" && !body.datetime.endsWith("Z")) {
     try {
       updateData.datetime = zonedDateTimeToUtc(body.datetime, user.timezone);
     } catch (error) {
