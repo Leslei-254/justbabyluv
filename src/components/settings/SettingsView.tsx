@@ -17,6 +17,7 @@ export function SettingsView({ user, baby }: { user: User; baby: Baby }) {
   const router = useRouter();
   const [savingPrefs, setSavingPrefs] = useState(false);
   const [resetting, setResetting] = useState(false);
+  const [privacyOpen, setPrivacyOpen] = useState(false);
 
   async function updatePref(key: string, value: string | boolean) {
     setSavingPrefs(true);
