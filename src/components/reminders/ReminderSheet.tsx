@@ -22,6 +22,7 @@ export function ReminderSheet({
   onClose,
   babyId,
   reminder,
+  timezone,
 }: {
   open: boolean;
   onClose: () => void;
@@ -100,7 +101,9 @@ export function ReminderSheet({
             type="datetime-local"
             required
             defaultValue={
-              reminder ? toLocalInputValue(reminder.datetime) : toLocalInputValue(new Date())
+              reminder
+                ? toLocalInputValue(reminder.datetime, timezone)
+                : toLocalInputValue(new Date(), timezone)
             }
           />
         </div>
