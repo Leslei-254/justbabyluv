@@ -4,10 +4,17 @@ import { logServerError } from "@/lib/logger";
 
 export const AUDIT_EVENT_TYPES = {
   ACCOUNT_SIGNUP: "account.signup",
+  BABY_CREATE: "baby.create",
   ACTIVITY_CREATE: "activity.create",
+  MILESTONE_CREATE: "milestone.create",
+  MILESTONE_UPDATE: "milestone.update",
+  MILESTONE_DELETE: "milestone.delete",
   ACTIVITY_UPDATE: "activity.update",
   ACTIVITY_DELETE: "activity.delete",
   REMINDER_CREATE: "reminder.create",
+  DEMO_DATA_SEED: "demo_data.seed",
+  DEMO_DATA_CLEAR: "demo_data.clear",
+  SETTINGS_UPDATE: "settings.update",
   REMINDER_UPDATE: "reminder.update",
   REMINDER_DELETE: "reminder.delete",
   REMINDER_COMPLETE: "reminder.complete",
