@@ -1,0 +1,19 @@
+{
+  "name": "JustBaby Luv Baby Care",
+  "short_name": "JustBaby Luv",
+  "description": "A calm, simple place to track baby care, reminders, and milestones.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#FBF6F2",
+  "theme_color": "#B15D68",
+  "lang": "en",
+  "icons": [
+    {
+      "src": "/brand/mark.svg",
+      "sizes": "64x64",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
