@@ -51,3 +51,61 @@ export async function GET(req: Request) {
     orderBy: [desc(activities.startTime)],
     limit,
   });
+
+  return NextResponse.json({ activities: list });
+}
+
+export async function POST(req: Request) {
+  const requestId = getRequestId(req);
+  const user = await getAuthedUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const body = await req.json().catch(() => null);
+  const babyId = body?.babyId as string | undefined;
+  if (!babyId) return NextResponse.json({ error: "babyId is required" }, { status: 400 });
+
+  const baby = await getOwnedBaby(user.id, babyId);
+  if (!baby) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+  const parsed = activitySchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: parsed.error.issues[0]?.message ?? "Invalid input" },
+      { status: 400 }
+    );
+  }
+
+  const openEndedLabel = OPEN_ENDED_LABELS[parsed.data.type];
+  if (!parsed.data.endTime && openEndedLabel) {
+    const existingOpen = await db.query.activities.findFirst({
+      where: and(
+        eq(activities.babyId, babyId),
+        eq(activities.type, parsed.data.type),
+        isNull(activities.endTime)
+      ),
+    });
+    if (existingOpen) {
+      return NextResponse.json(
+        { error: `A ${openEndedLabel} is already in progress for this baby.` },
+        { status: 409 }
+      );
+    }
+  }
+
+  const [activity] = await db
+    .insert(activities)
+    .values({ ...parsed.data, babyId })
+    .returning();
+
+  await auditEvent({
+    eventType: AUDIT_EVENT_TYPES.ACTIVITY_CREATE,
+    userId: user.id,
+    babyId,
+    entityType: "activity",
+    entityId: activity.id,
+    requestId,
+    metadata: { activityType: activity.type },
+  });
+
+  return NextResponse.json({ activity }, { status: 201 });
+}
