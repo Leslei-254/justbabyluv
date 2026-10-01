@@ -78,6 +78,8 @@ export function BabyStepsView({
                     <img
                       src={m.photoUrl}
                       alt={m.title}
+                      loading="lazy"
+                      decoding="async"
                       className="mt-2 rounded-xl max-h-40 w-full max-w-xs object-cover"
                     />
                   )}
