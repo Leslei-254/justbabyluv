@@ -29,6 +29,13 @@
       "when": 1790773600000,
       "tag": "0003_email_idempotency",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1790863350607,
+      "tag": "0004_rainy_glorian",
+      "breakpoints": true
     }
   ]
 }

@@ -20,6 +20,7 @@ export function SettingsView({ user, baby }: { user: User; baby: Baby }) {
   const [deletingAccount, setDeletingAccount] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
   const [privacyOpen, setPrivacyOpen] = useState(false);
+  const [profileName, setProfileName] = useState(user.name);
 
   async function updatePref(key: string, value: string | boolean) {
     setSavingPrefs(true);
@@ -143,6 +144,31 @@ export function SettingsView({ user, baby }: { user: User; baby: Baby }) {
             </Select>
           </div>
           <div>
+            <Field htmlFor="timezone">Timezone</Field>
+            <Select
+              id="timezone"
+              defaultValue={user.timezone}
+              disabled={savingPrefs}
+              onChange={(e) => updatePref("timezone", e.target.value)}
+            >
+              <option value="UTC">UTC</option>
+              <option value="Africa/Nairobi">Africa/Nairobi — East Africa Time (Nairobi)</option>
+              <option value="Africa/Lagos">Africa/Lagos — West Africa Time (Lagos)</option>
+              <option value="Africa/Johannesburg">Africa/Johannesburg — South Africa Time (Johannesburg)</option>
+              <option value="Europe/London">Europe/London — UK Time (London)</option>
+              <option value="Europe/Berlin">Europe/Berlin — Central European Time (Berlin)</option>
+              <option value="America/New_York">America/New_York — Eastern Time (New York)</option>
+              <option value="America/Chicago">America/Chicago — Central Time (Chicago)</option>
+              <option value="America/Denver">America/Denver — Mountain Time (Denver)</option>
+              <option value="America/Los_Angeles">America/Los_Angeles — Pacific Time (Los Angeles)</option>
+              <option value="Asia/Dubai">Asia/Dubai — Gulf Time (Dubai)</option>
+              <option value="Asia/Kolkata">Asia/Kolkata — India Time (Kolkata)</option>
+              <option value="Asia/Singapore">Asia/Singapore — Singapore Time</option>
+              <option value="Asia/Tokyo">Asia/Tokyo — Japan Time (Tokyo)</option>
+              <option value="Australia/Sydney">Australia/Sydney — Australian Eastern Time (Sydney)</option>
+            </Select>
+          </div>
+          <div>
             <Field htmlFor="theme">Theme</Field>
             <Select
               id="theme"
@@ -170,8 +196,20 @@ export function SettingsView({ user, baby }: { user: User; baby: Baby }) {
 
       <Card>
         <h2 className="font-display text-lg text-ink mb-3">Account</h2>
-        <p className="text-sm text-ink-soft mb-1">{user.name}</p>
-        <p className="text-sm text-ink-faint mb-4">{user.email}</p>
+        <Field htmlFor="account-name">Name</Field>
+        <input
+          id="account-name"
+          value={profileName}
+          disabled={savingPrefs}
+          onChange={(e) => setProfileName(e.target.value)}
+          onBlur={() => {
+            const value = profileName.trim();
+            if (value && value !== user.name) updatePref("name", value);
+          }}
+          className="min-h-11 w-full rounded-xl border border-border bg-surface px-3 text-sm text-ink outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+          autoComplete="name"
+        />
+        <p className="mt-3 text-sm text-ink-faint mb-4">{user.email}</p>
         <Button variant="outline" onClick={() => signOut({ callbackUrl: "/" })}>
           Log out
         </Button>
