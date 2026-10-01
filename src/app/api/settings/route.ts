@@ -11,6 +11,7 @@ const settingsSchema = z.object({
   theme: z.enum(["light", "dark", "system"]).optional(),
   emailRemindersEnabled: z.boolean().optional(),
   name: z.string().trim().min(1).max(100).optional(),
+  timezone: z.string().trim().min(1).max(100).optional(),
 });
 
 export async function PATCH(req: Request) {
@@ -37,6 +38,7 @@ export async function PATCH(req: Request) {
       email: users.email,
       unitPreference: users.unitPreference,
       theme: users.theme,
+      timezone: users.timezone,
       emailRemindersEnabled: users.emailRemindersEnabled,
     });
 
