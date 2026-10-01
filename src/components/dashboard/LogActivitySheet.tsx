@@ -9,7 +9,20 @@ import { Field, Input, Select, Textarea, ErrorText } from "@/components/ui/primi
 import type { activities, ActivityType } from "@/db/schema";
 import type { InferSelectModel } from "drizzle-orm";
 
-type Activity = InferSelectModel<typeof activities>;
+type Activity = Pick<
+  InferSelectModel<typeof activities>,
+  | "id"
+  | "type"
+  | "subtype"
+  | "startTime"
+  | "endTime"
+  | "amount"
+  | "unit"
+  | "side"
+  | "medicationName"
+  | "dose"
+  | "notes"
+>;
 
 function toLocalInputValue(date: Date) {
   const tzOffset = date.getTimezoneOffset() * 60000;

@@ -23,6 +23,12 @@ type Activity = InferSelectModel<typeof activities>;
 type Baby = InferSelectModel<typeof babies>;
 type Reminder = InferSelectModel<typeof reminders>;
 type Milestone = InferSelectModel<typeof milestones>;
+type ActiveTimer = Pick<Activity, "id" | "type" | "startTime">;
+type BufferActivity = Pick<Activity, "id" | "type" | "startTime" | "endTime">;
+type RecentActivity = Pick<Activity, "id" | "type" | "subtype" | "startTime" | "endTime" | "amount" | "unit" | "side" | "medicationName" | "dose" | "notes">;
+type DashboardReminder = Pick<Reminder, "id" | "title" | "datetime">;
+type DashboardMilestone = Pick<Milestone, "id" | "title" | "date">;
+type BufferMilestone = Pick<Milestone, "id" | "date">;
 
 const NETWORK_ERROR_MESSAGE = "Couldn't reach the server. Check your connection and try again.";
 
@@ -37,19 +43,19 @@ export function DashboardView({
   recentMilestones,
 }: {
   baby: Baby;
-  activeTimers: Activity[];
-  bufferActivities: Activity[];
-  recentActivities: Activity[];
-  overdueReminders: Reminder[];
-  upcomingReminders: Reminder[];
-  bufferMilestones: Milestone[];
-  recentMilestones: Milestone[];
+  activeTimers: ActiveTimer[];
+  bufferActivities: BufferActivity[];
+  recentActivities: RecentActivity[];
+  overdueReminders: DashboardReminder[];
+  upcomingReminders: DashboardReminder[];
+  bufferMilestones: BufferMilestone[];
+  recentMilestones: DashboardMilestone[];
 }) {
   const router = useRouter();
   const [sheetType, setSheetType] = useState<
     Exclude<Activity["type"], "SLEEP"> | null
   >(null);
-  const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
+  const [editingActivity, setEditingActivity] = useState<RecentActivity | null>(null);
   const [milestoneOpen, setMilestoneOpen] = useState(false);
   const [startingSleep, setStartingSleep] = useState(false);
   const [stoppingSleep, setStoppingSleep] = useState(false);

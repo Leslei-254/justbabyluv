@@ -32,13 +32,28 @@ export default async function DashboardPage() {
   ] = await Promise.all([
     db.query.activities.findMany({
       where: and(eq(activities.babyId, baby.id), isNull(activities.endTime)),
+      columns: { id: true, type: true, startTime: true },
       orderBy: [desc(activities.startTime)],
     }),
     db.query.activities.findMany({
       where: and(eq(activities.babyId, baby.id), gte(activities.startTime, bufferStart)),
+      columns: { id: true, type: true, startTime: true, endTime: true },
     }),
     db.query.activities.findMany({
       where: eq(activities.babyId, baby.id),
+      columns: {
+        id: true,
+        type: true,
+        subtype: true,
+        startTime: true,
+        endTime: true,
+        amount: true,
+        unit: true,
+        side: true,
+        medicationName: true,
+        dose: true,
+        notes: true,
+      },
       orderBy: [desc(activities.startTime)],
       limit: 6,
     }),
@@ -46,6 +61,7 @@ export default async function DashboardPage() {
     // one is timezone-safe as-is, since "has this instant already passed" is
     // the same answer everywhere, unlike calendar-day boundaries.
     db.query.reminders.findMany({
+      columns: { id: true, title: true, datetime: true },
       where: and(
         eq(reminders.babyId, baby.id),
         eq(reminders.completed, false),
@@ -56,6 +72,7 @@ export default async function DashboardPage() {
     }),
     // Upcoming: incomplete and still in the future.
     db.query.reminders.findMany({
+      columns: { id: true, title: true, datetime: true },
       where: and(
         eq(reminders.babyId, baby.id),
         eq(reminders.completed, false),
@@ -66,9 +83,11 @@ export default async function DashboardPage() {
     }),
     db.query.milestones.findMany({
       where: and(eq(milestones.babyId, baby.id), gte(milestones.date, bufferStart)),
+      columns: { id: true, date: true },
     }),
     db.query.milestones.findMany({
       where: eq(milestones.babyId, baby.id),
+      columns: { id: true, title: true, date: true },
       orderBy: (m, { desc }) => [desc(m.date)],
       limit: 3,
     }),
