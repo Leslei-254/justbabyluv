@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isValidTimeZone } from "@/lib/utils";
 
 export const babySchema = z.object({
   name: z.string().trim().min(1, "Baby's name is required").max(100),
