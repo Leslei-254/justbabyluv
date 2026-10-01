@@ -75,7 +75,7 @@ export function formatDuration(ms: number): string {
 
 type CalendarParts = { year: number; month: number; day: number };
 
-export function getCalendarParts(date: Date, timeZone: string): CalendarParts {
+export function isValidTimeZone(timeZone: string): boolean {\n  try {\n    new Intl.DateTimeFormat("en-US", { timeZone }).format();\n    return true;\n  } catch {\n    return false;\n  }\n}\n\nexport function getCalendarParts(date: Date, timeZone: string): CalendarParts {
   const parts = new Intl.DateTimeFormat("en-US", {
     timeZone,
     year: "numeric",
