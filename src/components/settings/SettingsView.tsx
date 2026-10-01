@@ -1,4 +1,4 @@
-"use client";
+"""use client""";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -210,7 +210,6 @@ export function SettingsView({ user, baby }: { user: User; baby: Baby }) {
           autoComplete="name"
         />
         <p className="mt-3 text-sm text-ink-faint mb-4">{user.email}</p>
-        <p className="text-sm text-ink-faint mb-4">{user.email}</p>
         <Button variant="outline" onClick={() => signOut({ callbackUrl: "/" })}>
           Log out
         </Button>
@@ -317,3 +316,4 @@ export function SettingsView({ user, baby }: { user: User; baby: Baby }) {
     </div>
   );
 }
+""
