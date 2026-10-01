@@ -60,7 +60,11 @@ export function Select({ className, ...props }: SelectHTMLAttributes<HTMLSelectE
 
 export function ErrorText({ children }: { children?: string | null }) {
   if (!children) return null;
-  return <p className="mt-1.5 text-sm text-danger">{children}</p>;
+  return (
+    <p className="mt-1.5 text-sm text-danger" role="alert" aria-live="assertive">
+      {children}
+    </p>
+  );
 }
 
 export function EmptyState({
