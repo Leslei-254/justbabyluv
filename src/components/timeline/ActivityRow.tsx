@@ -10,7 +10,19 @@ import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import type { activities } from "@/db/schema";
 import type { InferSelectModel } from "drizzle-orm";
 
-type Activity = InferSelectModel<typeof activities>;
+type Activity = Pick<
+  InferSelectModel<typeof activities>,
+  | "id"
+  | "type"
+  | "subtype"
+  | "amount"
+  | "unit"
+  | "side"
+  | "medicationName"
+  | "startTime"
+  | "endTime"
+  | "notes"
+>;
 
 export function ActivityRow({
   activity,
