@@ -67,10 +67,10 @@ export function SignupForm() {
           name="password"
           type="password"
           required
-          minLength={8}
+          minLength={12}
           autoComplete="new-password"
         />
-        <p className="mt-1.5 text-xs text-ink-faint">At least 8 characters.</p>
+        <p className="mt-1.5 text-xs text-ink-faint">At least 12 characters, including a letter and a number.</p>
       </div>
       <ErrorText>{error}</ErrorText>
       <Button type="submit" disabled={loading} className="w-full" size="lg">
