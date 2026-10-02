@@ -78,7 +78,7 @@ export function Sheet({
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
       <div
-        className="absolute inset-0 bg-ink/40"
+        className="absolute inset-0 bg-ink/40 jbl-fade-in"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -88,7 +88,7 @@ export function Sheet({
         aria-modal="true"
         aria-labelledby={titleId}
         className={cn(
-          "relative w-full sm:max-w-md bg-surface rounded-t-3xl sm:rounded-3xl max-h-[88vh] overflow-y-auto shadow-xl",
+          "relative w-full sm:max-w-md bg-surface rounded-t-3xl sm:rounded-3xl max-h-[88vh] overflow-y-auto shadow-xl jbl-sheet-in",
           className
         )}
       >
@@ -101,7 +101,7 @@ export function Sheet({
             type="button"
             onClick={onClose}
             aria-label="Close dialog"
-            className="w-10 h-10 -mr-1.5 rounded-full flex items-center justify-center text-ink-soft hover:bg-cream"
+            className="w-10 h-10 -mr-1.5 rounded-full flex items-center justify-center text-ink-soft hover:bg-cream active:scale-95 transition-transform duration-150"
           >
             <X size={18} aria-hidden="true" />
           </button>
