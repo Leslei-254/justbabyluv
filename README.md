@@ -140,6 +140,59 @@ If an application deployment fails after a database change:
 
 Keep migration files immutable once applied to production. Create a new migration for a correction rather than editing an already-applied migration.
 
+## Environment configuration
+
+Production uses deployment-managed environment variables. Real secrets must only exist in local ignored environment files or the deployment provider's secret/environment-variable settings.
+
+### Required production variables
+
+| Variable | Required | Purpose |
+| --- | --- | --- |
+| `DATABASE_URL` | Yes | Hosted libSQL/Turso connection URL |
+| `DATABASE_AUTH_TOKEN` | Yes | Authenticates the production database connection |
+| `AUTH_SECRET` | Yes | Signs NextAuth session tokens; use a strong random value |
+| `NEXTAUTH_URL` | Yes | Deployed HTTPS application origin |
+| `APP_URL` | Yes | Public HTTPS origin used by email links and assets |
+| `ADMIN_EMAIL` | Yes | Administrator email for the protected `/admin` page |
+
+### Optional production variables
+
+| Variable | Purpose |
+| --- | --- |
+| `RESEND_API_KEY` | Enables real reminder and welcome email delivery |
+| `EMAIL_FROM` | Sender address used when email delivery is enabled |
+
+If email is enabled, use a sender address/domain accepted and verified by the email provider.
+
+### Local configuration
+
+1. Copy `.env.example` to `.env.local`.
+2. Keep `DATABASE_URL` on the local SQLite default unless intentionally testing the hosted database.
+3. Leave `DATABASE_AUTH_TOKEN` blank for local SQLite.
+4. Use a development-only `AUTH_SECRET`; never reuse the production secret.
+5. Keep `NEXTAUTH_URL` and `APP_URL` at `http://localhost:3000`.
+6. Set `ADMIN_EMAIL` only when testing the protected admin page locally.
+
+### Production deployment checklist
+
+- Confirm all required variables are present in the deployment environment.
+- Confirm `DATABASE_URL` points to the intended production database and `DATABASE_AUTH_TOKEN` is configured as a secret.
+- Confirm `AUTH_SECRET` is a strong production-only value.
+- Confirm `NEXTAUTH_URL` and `APP_URL` use the deployed HTTPS origin.
+- Confirm `ADMIN_EMAIL` matches the intended administrator account.
+- If email is enabled, confirm `RESEND_API_KEY` and a valid `EMAIL_FROM`.
+- Never paste secret values into GitHub issues, commits, README files, screenshots, or chat.
+- After deployment, verify `/api/health`, authentication, email behavior if enabled, and `/admin`.
+
+### Troubleshooting
+
+- **Database connection failure:** verify `DATABASE_URL` and `DATABASE_AUTH_TOKEN` belong to the same hosted database.
+- **Authentication failure:** verify `AUTH_SECRET` is present and `NEXTAUTH_URL` matches the deployed origin.
+- **Admin redirect:** verify `ADMIN_EMAIL` matches the signed-in account; comparison is case-insensitive and trims surrounding whitespace.
+- **Email failure:** verify `RESEND_API_KEY`, sender verification, and `EMAIL_FROM`.
+
+No secret values belong in this documentation or repository.
+
 ## Environment variables
 
 See `.env.example` for the full list with comments. Summary:
