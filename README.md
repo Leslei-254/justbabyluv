@@ -77,6 +77,8 @@ typed columns per activity, related to a baby), `milestones`, and
 
 - `npm run db:generate` — generate a SQL migration from the current schema
   (output in `drizzle/`)
+- `npm run db:migrate` — apply all pending tracked Drizzle migrations to the
+  configured database
 - `npm run db:push` — apply the schema directly to the local SQLite file at
   `DATABASE_URL` (used for local dev)
 - `npm run db:studio` — open Drizzle Studio to browse the local database
@@ -85,6 +87,8 @@ typed columns per activity, related to a baby), `milestones`, and
 
 The database file itself (`data/justbabyluv.db`) is **not** committed to
 git — running `db:push` (and optionally `db:seed`) recreates it locally.
+For production and migration-based environments, use `db:migrate` rather than
+`db:push` so the tracked migration history remains authoritative.
 
 For production, point `DATABASE_URL` at a hosted libSQL database (e.g. a
 free [Turso](https://turso.tech) database) — no code changes are required.
@@ -98,7 +102,7 @@ Production uses a hosted libSQL/Turso database. Database changes must be made th
 1. Make the schema change in `src/db/schema.ts` on a feature branch.
 2. Generate the migration with `npm run db:generate` and review the SQL under `drizzle/` before committing it.
 3. Run the full local verification suite: `npm test`, `npm run lint`, `npx tsc --noEmit`, and `npm run build`.
-4. Apply the committed migration to the production database using the project's Drizzle migration tooling with the production `DATABASE_URL` and `DATABASE_AUTH_TOKEN` configured in the deployment environment.
+4. Apply all pending committed migrations to the production database with `npm run db:migrate`, using the production `DATABASE_URL` and `DATABASE_AUTH_TOKEN` configured in the deployment environment.
 5. Deploy the application that expects the new schema.
 6. Verify `GET /api/health` and exercise the affected application flow after deployment.
 
