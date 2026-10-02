@@ -43,8 +43,17 @@ export default async function LandingPage() {
                   Sign In
                 </Button>
               </Link>
+              <Link href="/login?demo=1">
+                <Button size="lg" variant="secondary">
+                  Try the Demo
+                </Button>
+              </Link>
             </div>
-            <p className="mt-6 text-xs text-ink-faint max-w-sm">
+            <p className="mt-3 text-xs text-ink-faint max-w-sm">
+              The demo uses example baby-care records. No personal information is
+              required to explore it.
+            </p>
+            <p className="mt-4 text-xs text-ink-faint max-w-sm">
               Your logs are personal records. This app does not provide
               medical advice.
             </p>
