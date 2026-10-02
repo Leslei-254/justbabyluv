@@ -58,7 +58,7 @@ export function BabyStepsView({
         <EmptyState
           icon={<Sparkles size={22} />}
           title="No Baby Steps yet"
-          description="Record first smiles, first steps, and other little milestones as they happen."
+          description="Save first smiles, first steps, and other moments you want to remember."
           action={
             <Button onClick={() => setOpen(true)}>Add a Baby Step</Button>
           }
