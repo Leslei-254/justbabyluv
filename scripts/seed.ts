@@ -8,18 +8,26 @@ const DEMO_EMAIL = "demo@justbabyluv.com";
 const DEMO_PASSWORD = "demo1234";
 
 async function main() {
+  const passwordHash = await hashPassword(DEMO_PASSWORD);
   let user = await db.query.users.findFirst({ where: eq(users.email, DEMO_EMAIL) });
 
   if (!user) {
-    const passwordHash = await hashPassword(DEMO_PASSWORD);
     const [created] = await db
       .insert(users)
-      .values({ name: "Demo Parent", email: DEMO_EMAIL, passwordHash })
+      .values({
+        name: "Demo Parent",
+        email: DEMO_EMAIL,
+        passwordHash,
+      })
       .returning();
     user = created;
-    console.log(`Created demo user: ${DEMO_EMAIL} / ${DEMO_PASSWORD}`);
+    console.log(`Created demo user: ${DEMO_EMAIL}`);
   } else {
-    console.log(`Demo user already exists: ${DEMO_EMAIL}`);
+    await db
+      .update(users)
+      .set({ passwordHash })
+      .where(eq(users.id, user.id));
+    console.log(`Updated demo user password: ${DEMO_EMAIL}`);
   }
 
   let baby = await db.query.babies.findFirst({ where: eq(babies.userId, user.id) });

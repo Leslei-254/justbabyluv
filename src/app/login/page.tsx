@@ -16,6 +16,18 @@ export default async function LoginPage() {
         </Link>
         <h1 className="font-display text-2xl text-ink mt-8 mb-1">Welcome back</h1>
         <p className="text-sm text-ink-soft mb-6">Sign in to your account.</p>
+
+        <div className="rounded-2xl border border-border bg-surface p-4 mb-6">
+          <p className="text-sm font-medium text-ink">Want to explore first?</p>
+          <p className="text-xs text-ink-soft mt-1">
+            Use the demo account below to explore the app with example baby-care records.
+          </p>
+          <div className="mt-3 text-xs text-ink-soft space-y-1">
+            <p><span className="font-medium text-ink">Email:</span> demo@justbabyluv.com</p>
+            <p><span className="font-medium text-ink">Password:</span> demo1234</p>
+          </div>
+        </div>
+
         <LoginForm />
         <p className="text-sm text-ink-soft mt-6 text-center">
           New here?{" "}
