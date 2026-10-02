@@ -1,13 +1,5 @@
 @import "tailwindcss";
 
-/*
- * Design tokens for JustBaby Luv.
- * Warm, calm, premium family-care palette: warm neutral backgrounds with a
- * restrained dusty-rose accent (primary) and a soft warm gold accent
- * (secondary). Values are grouped by theme below; components reference the
- * token names only (bg-rose, text-ink-soft, etc.) — never raw hex values.
- */
-
 :root {
   --color-cream: #fbf6f2;
   --color-surface: #ffffff;
@@ -87,6 +79,24 @@
   --font-display: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Palatino, serif;
 }
 
+@keyframes jbl-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes jbl-sheet-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.jbl-fade-in {
+  animation: jbl-fade-in 180ms ease-out both;
+}
+
+.jbl-sheet-in {
+  animation: jbl-sheet-in 180ms ease-out both;
+}
+
 body {
   background: var(--color-cream);
   color: var(--color-ink);
@@ -107,5 +117,10 @@ body {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+
+  .jbl-fade-in,
+  .jbl-sheet-in {
+    animation: none !important;
   }
 }
