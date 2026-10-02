@@ -16,7 +16,7 @@ export default async function SignupPage() {
         </Link>
         <h1 className="font-display text-2xl text-ink mt-8 mb-1">Create your account</h1>
         <p className="text-sm text-ink-soft mb-6">
-          A calm place to keep track of the little things.
+          A simple place to keep track of feeds, sleep, reminders, and milestones.
         </p>
         <SignupForm />
         <p className="text-sm text-ink-soft mt-6 text-center">
