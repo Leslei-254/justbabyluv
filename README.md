@@ -89,6 +89,57 @@ git — running `db:push` (and optionally `db:seed`) recreates it locally.
 For production, point `DATABASE_URL` at a hosted libSQL database (e.g. a
 free [Turso](https://turso.tech) database) — no code changes are required.
 
+## Database operations
+
+Production uses a hosted libSQL/Turso database. Database changes must be made through the tracked Drizzle migrations and verified before deployment; do not edit production tables manually unless there is an emergency recovery procedure that has been reviewed separately.
+
+### Production migration procedure
+
+1. Make the schema change in `src/db/schema.ts` on a feature branch.
+2. Generate the migration with `npm run db:generate` and review the SQL under `drizzle/` before committing it.
+3. Run the full local verification suite: `npm test`, `npm run lint`, `npx tsc --noEmit`, and `npm run build`.
+4. Apply the committed migration to the production database using the project's Drizzle migration tooling with the production `DATABASE_URL` and `DATABASE_AUTH_TOKEN` configured in the deployment environment.
+5. Deploy the application that expects the new schema.
+6. Verify `GET /api/health` and exercise the affected application flow after deployment.
+
+Never commit `DATABASE_AUTH_TOKEN` or any other production secret. Use the deployment environment or a secure local environment when applying production migrations.
+
+### Database health check
+
+`GET /api/health` performs a lightweight database connectivity check.
+
+- **200** with `status: "ok"` means the application can reach the database.
+- **503** with `status: "error"` means the database check failed.
+- The response contains only a status, timestamp, and request ID; database credentials, connection strings, SQL errors, and user data are not returned.
+- The endpoint can be used by an external uptime or deployment monitor. A failed health check should be investigated together with the deployment logs and database provider status.
+
+Example local check:
+
+```powershell
+Invoke-WebRequest -UseBasicParsing http://localhost:3000/api/health | Select-Object StatusCode, Content
+```
+
+For production, replace the local origin with the deployed application origin. Do not include secrets in monitoring URLs or configuration.
+
+### Backup and recovery
+
+Production database backup and point-in-time recovery are responsibilities of the hosted database provider and the project operator. Before a high-risk schema change, confirm that the Turso database backup/recovery options available to the production plan are current and sufficient for the required recovery point.
+
+The application repository does not contain database credentials or database backup files. If recovery is required, follow the database provider's documented recovery procedure, restore or recover the database first, then verify `/api/health` and the affected application flows before considering the deployment recovered.
+
+### Failed deployment or migration
+
+If an application deployment fails after a database change:
+
+1. Do not repeatedly rerun the migration without checking the database state.
+2. Check the deployment logs and the database provider status.
+3. Determine whether the migration was applied before the application deployment failed.
+4. If the migration is already applied, avoid manually applying it again.
+5. If application and schema versions are incompatible, roll back only using a reviewed, reversible application/database recovery plan.
+6. Verify `/api/health` and the affected user flow after recovery.
+
+Keep migration files immutable once applied to production. Create a new migration for a correction rather than editing an already-applied migration.
+
 ## Environment variables
 
 See `.env.example` for the full list with comments. Summary:
