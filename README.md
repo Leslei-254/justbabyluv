@@ -180,5 +180,4 @@ npx tsc --noEmit
 - Single parent account/baby profile per the brief; the data model already
   scopes every record through `babyId` → `userId`, so multi-caregiver sharing
   can be added later without a schema rework.
-- No automated test suite yet; flows were verified manually against the
-  acceptance-test checklist (see project notes).
+- Automated tests cover timezone/date handling, reminder validation, and email templates; run `npm test` before committing changes.
