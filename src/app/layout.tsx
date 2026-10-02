@@ -6,8 +6,12 @@ import "./globals.css";
 export const metadata: Metadata = {
   metadataBase: new URL("https://justbabyluv.vercel.app"),
   title: "JustBaby Luv Baby Care",
-  description: "Keep track of the little things that matter.",
+  description:
+    "A calm, simple place to track baby care, reminders, and milestones.",
   applicationName: "JustBaby Luv",
+  alternates: {
+    canonical: "/",
+  },
   manifest: "/manifest.webmanifest",
   icons: {
     icon: "/brand/mark.svg",
@@ -15,10 +19,17 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "JustBaby Luv Baby Care",
-    description: "A calm, simple place to track baby care, reminders, and milestones.",
-    url: "https://justbabyluv.vercel.app",
+    description:
+      "A calm, simple place to track baby care, reminders, and milestones.",
+    url: "/",
     siteName: "JustBaby Luv",
     type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "JustBaby Luv Baby Care",
+    description:
+      "A calm, simple place to track baby care, reminders, and milestones.",
   },
   appleWebApp: {
     capable: true,
