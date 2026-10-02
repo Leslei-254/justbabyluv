@@ -30,7 +30,7 @@ export function SignupForm() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || "Something went wrong. Please try again.");
+        setError(data.error || "We couldn’t create your account. Please try again.");
         return;
       }
 
