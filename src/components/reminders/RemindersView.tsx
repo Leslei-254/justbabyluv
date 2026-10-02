@@ -160,17 +160,17 @@ export function RemindersView({
                     <p className="text-xs text-ink-soft">
                       {formatDayLabel(r.datetime, timezone)} · {formatClockTime(r.datetime, timezone)}
                       {r.repeat !== "none" ? ` · repeats ${r.repeat}` : ""}
-                      {r.emailEnabled ? " · email on" : ""}
+                      {r.emailEnabled ? " · email notifications on" : ""}
                     </p>
                   </div>
                   <div className="flex flex-wrap items-center justify-end gap-1 shrink-0">
                     {r.emailEnabled && (
                       <button
-                        aria-label="Send test email"
+                        aria-label="Send a test email"
                         onClick={() => sendTest(r)}
                         disabled={busy}
                         className="w-10 h-10 rounded-full flex items-center justify-center text-ink-soft hover:bg-cream disabled:opacity-50"
-                        title="Send test email"
+                        title="Send a test email"
                       >
                         <Mail size={14} />
                       </button>

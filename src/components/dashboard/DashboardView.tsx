@@ -111,7 +111,7 @@ export function DashboardView({
       <UpcomingReminders overdue={overdueReminders} upcoming={upcomingReminders} />
       <Card>
         <div className="flex items-center justify-between mb-1"><h2 className="font-display text-lg text-ink">Recent activity</h2><Link href="/timeline" className="text-sm text-rose-strong font-medium">View timeline</Link></div>
-        {recentActivities.length === 0 ? <EmptyState icon={<CalendarClock size={22} />} title="No activities yet" description="Start by logging your baby's first feed, diaper change, or sleep." /> : <div>{recentActivities.map((a) => <ActivityRow key={a.id} activity={a} onEdit={setEditingActivity} />)}</div>}
+        {recentActivities.length === 0 ? <EmptyState icon={<CalendarClock size={22} />} title="Nothing logged yet" description="Start with a feed, diaper change, sleep, or another quick action above." /> : <div>{recentActivities.map((a) => <ActivityRow key={a.id} activity={a} onEdit={setEditingActivity} />)}</div>}
       </Card>
       <RecentMilestones milestones={recentMilestones} />
       {sheetType && <LogActivitySheet open={Boolean(sheetType)} onClose={() => setSheetType(null)} babyId={baby.id} type={sheetType} />}
