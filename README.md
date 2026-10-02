@@ -204,11 +204,13 @@ See `.env.example` for the full list with comments. Summary:
 | Variable | Required | Purpose |
 | --- | --- | --- |
 | `DATABASE_URL` | Yes | libSQL/SQLite connection string |
+| `DATABASE_AUTH_TOKEN` | Yes (prod) | Authenticates the hosted Turso/libSQL database connection |
 | `AUTH_SECRET` | Yes (prod) | Signs NextAuth session tokens — generate with `openssl rand -base64 32` |
 | `NEXTAUTH_URL` | Yes (prod) | Base URL of the deployed app |
 | `RESEND_API_KEY` | No | Enables real reminder and welcome email sending via Resend; omit to use the safe fallback |
 | `EMAIL_FROM` | No | "From" address for transactional emails |
 | `APP_URL` | Yes (prod) | Public application origin used by welcome-email links and brand assets |
+| `ADMIN_EMAIL` | Yes (prod) | Administrator email for the protected `/admin` operations page |
 
 No secrets are committed to this repository. `.env` is git-ignored;
 `.env.example` contains variable names and safe local defaults only.
