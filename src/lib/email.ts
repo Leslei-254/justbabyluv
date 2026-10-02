@@ -29,7 +29,7 @@ export function buildReminderEmail(params: {
   });
   return {
     subject: `JustBaby Luv reminder: ${title}`,
-    text: `Hi,\nThis is your reminder for ${babyName}:\n${title} at ${time}.\n\nOpen Baby Care to mark it complete.`,
+    text: `Hi,\nThis is your reminder for ${babyName}:\n${title} at ${time}.\n\nOpen JustBaby Luv to view your reminder and mark it complete.`,
   };
 }
 
