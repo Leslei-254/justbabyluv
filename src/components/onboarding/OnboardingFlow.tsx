@@ -128,7 +128,7 @@ export function OnboardingFlow({ firstName }: { firstName?: string | null }) {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || "Couldn't create that reminder.");
+        setError(data.error || "We couldn’t create that reminder. Please try again.");
         return;
       }
 
@@ -183,17 +183,17 @@ export function OnboardingFlow({ firstName }: { firstName?: string | null }) {
               Welcome{firstName ? `, ${firstName}` : ""}.
             </h1>
             <p className="mt-3 text-sm leading-6 text-ink-soft">
-              Let&apos;s set up the basics so JustBaby Luv feels ready for you. It only takes a minute, and you can skip anything that isn&apos;t essential.
+              Let&apos;s set up the basics for your baby. It only takes a minute, and you can skip anything you&apos;d rather add later.
             </p>
 
             <div className="mt-6 space-y-3 text-sm text-ink-soft">
               <div className="rounded-2xl border border-border bg-surface p-4">
                 <strong className="text-ink">1. Baby profile</strong>
-                <p className="mt-1">Just the name and date of birth needed for your dashboard.</p>
+                <p className="mt-1">Just the name and date of birth needed to get started.</p>
               </div>
               <div className="rounded-2xl border border-border bg-surface p-4">
                 <strong className="text-ink">2. Preferences</strong>
-                <p className="mt-1">Choose how you want feeding amounts displayed.</p>
+                <p className="mt-1">Choose how you want feeding amounts displayed in the app.</p>
               </div>
               <div className="rounded-2xl border border-border bg-surface p-4">
                 <strong className="text-ink">3. Optional reminder</strong>
@@ -317,7 +317,7 @@ export function OnboardingFlow({ firstName }: { firstName?: string | null }) {
               </div>
               {emailReminders && (
                 <p className="text-xs text-ink-faint">
-                  Email notification is enabled for this reminder. Automatic scheduled delivery is not included unless a scheduler is configured.
+                  Email notification is enabled for this reminder. Scheduled delivery depends on your email scheduler being configured.
                 </p>
               )}
               <ErrorText>{error}</ErrorText>
