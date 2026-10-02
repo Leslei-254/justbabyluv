@@ -232,3 +232,13 @@ npx tsc --noEmit
   scopes every record through `babyId` → `userId`, so multi-caregiver sharing
   can be added later without a schema rework.
 - Automated tests cover timezone/date handling, reminder validation, and email templates; run `npm test` before committing changes.
+
+## Admin health checks
+
+Phase 31 adds a private `/admin` operations page for the configured administrator.
+
+- Set `ADMIN_EMAIL` in the deployment environment to the exact administrator email.
+- The page requires an authenticated session and an email match against `ADMIN_EMAIL`.
+- It shows the database health endpoint link and the latest 20 audit event types/request IDs.
+- Sensitive audit metadata, credentials, connection details, SQL errors, and user activity details are not exposed by the page.
+- Keep `ADMIN_EMAIL` out of source control and configure it through the deployment environment.
